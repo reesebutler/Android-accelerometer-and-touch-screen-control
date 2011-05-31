@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">I should not see this!</string>
+    <string name="app_name">Accel Test</string>
+    <string name="cal">Calibrate</string>
+</resources>
