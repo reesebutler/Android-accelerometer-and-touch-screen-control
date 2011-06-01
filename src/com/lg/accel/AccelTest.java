@@ -1,3 +1,7 @@
+/** Reese Butler
+ *  6/1/2011
+ */
+
 package com.lg.accel;
 
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
@@ -9,39 +13,55 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
 
-public class AccelTest extends Activity implements SensorEventListener, OnClickListener
+/** Implements SensorEventListener for the accelerometer/orientation values
+* Implements OnClickListener for the calibration button
+* Implements OnGestureListener for the scrolling (touch-screen) values */
+public class AccelTest extends Activity implements SensorEventListener, OnClickListener, OnGestureListener
 {
 	private SensorManager director;
-	private TextView display;
+	private TextView display1, display2;
 	private Button calibrationButton;
+	private GestureDetector detector;
 	private float x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0, xFinal, yFinal, zFinal;
 	private float dx, dy, dz;
-	String s = "X: 0\nY: 0\nZ: 0\n\nX: 0\nY: 0\nZ: 0";
+	String s1 = "X: 0\nY: 0\nZ: 0\n\nX: 0\nY: 0\nZ: 0";
+	String s2 = "\nScroll info:\nX: 0\nY: 0";
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        display = (TextView) findViewById(R.id.display);
-        display.setText(s);
+        display1 = (TextView) findViewById(R.id.display1);
+        display2 = (TextView) findViewById(R.id.display2);
+        display1.setText(s1);
+        display2.setText(s2);
         calibrationButton = (Button) findViewById(R.id.calibration_button);
         calibrationButton.setOnClickListener(this);
+        detector = new GestureDetector(this, this); //Initializes the GestureDetector (for touch-screen input)
+        detector.setIsLongpressEnabled(false);
     }
 
+    /** Called when the application is paused (essentially any time that the user navigates away from the main activity) */
 	protected void onPause()
 	{
 		super.onPause();
+		
+		//Called so that the sensors do not drain the battery when not in use
 		director.unregisterListener(this, director.getDefaultSensor(TYPE_ACCELEROMETER));
 		director.unregisterListener(this, director.getDefaultSensor(TYPE_ORIENTATION));
 		director = null;
 	}
 	
+	/** Called after the application is started or resumed */
 	protected void onResume()
 	{
 		super.onResume();
@@ -65,41 +85,82 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		//As of now this method really doesn't need to do anything
 	}
 	
+	/** Called whenever any values from the sensors change */
 	public void onSensorChanged(SensorEvent event)
 	{
-		synchronized(this)
+		synchronized(this) //I still don't know for sure if this line is necessary. If anyone reading my code knows, please inform me.
 		{
 			if(event.sensor.getType() == TYPE_ORIENTATION)
 			{
+				//The raw, uncalibrated values
 				x2 = event.values[0];
 				y2 = event.values[1];
 				z2 = event.values[2];
+				
+				//The calibrated values which have been adjusted by the appropriate offset
 				xFinal = x2 - dx;
 				yFinal = y2 - dy;
 				zFinal = z2 - dz;
-				s = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal;
+				s1 = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal;;
 				
-				display.setText(s);
+				display1.setText(s1); //Updates the display
 			}
 			if(event.sensor.getType() == TYPE_ACCELEROMETER)
 			{
 				x1 = event.values[0];
 				y1 = event.values[1];
 				z1 = event.values[2];
-				s = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal;
+				s1 = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal;
 					
-				display.setText(s);
+				display1.setText(s1); //Updates the display
 			}
 		}
 	}
 	
+	/** Called when any section of the Activity's display is clicked */
 	public void onClick(View v)
 	{
-		if(v == calibrationButton)
+		if(v == calibrationButton) //If the button was pressed, set the calibration values
 		{
 			dx = x2;
 			dy = y2;
 			dz = z2;
 		}
+	}
+	
+	//a method of the View class which needs to be implemented for touch control to work
+	public boolean onTouchEvent(MotionEvent me)
+	{ 
+		//Passes knowledge of the MotionEvent to the detector, which in turn allows the other OnGestureListener
+		//    methods to be called
+		return detector.onTouchEvent(me); 
+	}
+	
+	public boolean onDown(MotionEvent e)
+	{
+		return true;
+	}
+	
+	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY)
+	{
+		return true;
+	}
+	
+	public void onLongPress(MotionEvent e){}
+	
+	public void onShowPress(MotionEvent e){}
+	
+	public boolean onSingleTapUp(MotionEvent e)
+	{
+		return true;
+	}
+	
+	/** Called when a scroll motion is made on the touch-screen */
+	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
+	{
+		String s2 = "\nScroll info:\nX: " + distanceX + "\nY: " + distanceY;
+		display2.setText(s2);
+		
+		return true;
 	}
 }
