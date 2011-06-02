@@ -8,15 +8,16 @@
 <TextView  
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
-    android:id="@+id/display1"
+    android:id="@+id/calibrate"
     android:textSize="20sp"
     />
     
-<TextView  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:id="@+id/display2"
-    android:textSize="20sp"
-    />
+<Button
+	android:layout_width="wrap_content" 
+	android:layout_height="wrap_content"
+	android:id="@+id/calibration_button"
+	android:text="@string/cal"
+  	android:textSize="20sp"	
+	/>
     
 </LinearLayout>

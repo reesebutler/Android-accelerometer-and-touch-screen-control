@@ -1,5 +1,5 @@
 /** Reese Butler
- *  6/1/2011
+ *  6/2/2011
  */
 
 package com.lg.accel;
@@ -8,32 +8,34 @@ import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.Sensor.TYPE_ORIENTATION;
 import static android.hardware.SensorManager.SENSOR_DELAY_UI;
 import android.app.Activity;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.TextView;
 
 /** Implements SensorEventListener for the accelerometer/orientation values
-* Implements OnClickListener for the calibration button
 * Implements OnGestureListener for the scrolling (touch-screen) values */
-public class AccelTest extends Activity implements SensorEventListener, OnClickListener, OnGestureListener
+public class AccelTest extends Activity implements SensorEventListener, OnGestureListener
 {
+	private static final String TAG = "MyActivity"; //For debugging purposes
 	private SensorManager director;
 	private TextView display1, display2;
-	private Button calibrationButton;
 	private GestureDetector detector;
 	private float x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0, xFinal, yFinal, zFinal;
-	private float dx, dy, dz;
-	String s1 = "X: 0\nY: 0\nZ: 0\n\nX: 0\nY: 0\nZ: 0";
-	String s2 = "\nScroll info:\nX: 0\nY: 0";
+	private float dx = 0, dy = 0, dz = 0;
+	private String s1 = "X: 0\nY: 0\nZ: 0\n\nX: 0\nY: 0\nZ: 0";
+	private String s2 = "\nScroll info:\nX: 0\nY: 0";
+	protected static final int SUB_ACTIVITY_REQUEST_CODE = 100;
 	
     /** Called when the activity is first created. */
     @Override
@@ -44,8 +46,6 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
         display2 = (TextView) findViewById(R.id.display2);
         display1.setText(s1);
         display2.setText(s2);
-        calibrationButton = (Button) findViewById(R.id.calibration_button);
-        calibrationButton.setOnClickListener(this);
         detector = new GestureDetector(this, this); //Initializes the GestureDetector (for touch-screen input)
         detector.setIsLongpressEnabled(false);
     }
@@ -77,6 +77,46 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		if(!orientExists)
 		{
 			director.unregisterListener(this, director.getDefaultSensor(TYPE_ORIENTATION));
+		}
+	}
+	
+	/** Creates the menu */
+	public boolean onCreateOptionsMenu(Menu menu) 
+	{
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.menu, menu);
+	    return true;
+	}
+	
+	/** Determines what to do when the user chooses a menu option */
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		switch (item.getItemId()){
+		case R.id.calibrate:
+		{
+			Intent i = new Intent(AccelTest.this, Calibrate.class);
+			startActivityForResult(i, SUB_ACTIVITY_REQUEST_CODE);
+		}
+			return true;
+		case R.id.help:
+			//Do something when "Help" is selected
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+	
+	/** Determines what to do with the sub-activity's results */
+	protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		super.onActivityResult(requestCode, resultCode, data);
+		
+		if(requestCode == SUB_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK)
+		{
+			Bundle b = data.getExtras();
+			dx = b.getFloat("0");
+			dy = b.getFloat("1");
+			dz = b.getFloat("2");
 		}
 	}
 	
@@ -114,17 +154,6 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 					
 				display1.setText(s1); //Updates the display
 			}
-		}
-	}
-	
-	/** Called when any section of the Activity's display is clicked */
-	public void onClick(View v)
-	{
-		if(v == calibrationButton) //If the button was pressed, set the calibration values
-		{
-			dx = x2;
-			dy = y2;
-			dz = z2;
 		}
 	}
 	
