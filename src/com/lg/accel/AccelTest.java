@@ -99,7 +99,10 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		}
 			return true;
 		case R.id.help:
-			//Do something when "Help" is selected
+		{
+			Intent i = new Intent(AccelTest.this, Help.class);
+			startActivity(i);
+		}
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
