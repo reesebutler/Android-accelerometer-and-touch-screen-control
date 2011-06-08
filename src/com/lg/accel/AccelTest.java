@@ -1,5 +1,5 @@
 /** Reese Butler
- *  6/2/2011
+ *  6/8/2011
  */
 
 package com.lg.accel;
@@ -7,14 +7,19 @@ package com.lg.accel;
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.Sensor.TYPE_ORIENTATION;
 import static android.hardware.SensorManager.SENSOR_DELAY_UI;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.Socket;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.Menu;
@@ -27,7 +32,7 @@ import android.widget.TextView;
 * Implements OnGestureListener for the scrolling (touch-screen) values */
 public class AccelTest extends Activity implements SensorEventListener, OnGestureListener
 {
-	private static final String TAG = "MyActivity"; //For debugging purposes
+	//private static final String TAG = "MyActivity"; //For debugging purposes
 	private SensorManager director;
 	private TextView display1, display2;
 	private GestureDetector detector;
@@ -36,10 +41,15 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	private String s1 = "X: 0\nY: 0\nZ: 0\n\nX: 0\nY: 0\nZ: 0";
 	private String s2 = "\nScroll info:\nX: 0\nY: 0";
 	protected static final int SUB_ACTIVITY_REQUEST_CODE = 100;
+	private static final String IP = "192.168.1.23";
+	private PrintWriter outToServer;
+	private Socket clientSocket;
+	private WifiManager wifi;
 	
     /** Called when the activity is first created. */
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) 
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         display1 = (TextView) findViewById(R.id.display1);
@@ -59,6 +69,17 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		director.unregisterListener(this, director.getDefaultSensor(TYPE_ACCELEROMETER));
 		director.unregisterListener(this, director.getDefaultSensor(TYPE_ORIENTATION));
 		director = null;
+		
+		if(outToServer != null)
+			outToServer.close();
+		
+		if(clientSocket != null)
+		try {
+			clientSocket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
 	}
 	
 	/** Called after the application is started or resumed */
@@ -66,6 +87,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	{
 		super.onResume();
 		director = (SensorManager) getSystemService(SENSOR_SERVICE);
+		wifi = (WifiManager) getSystemService(WIFI_SERVICE);
 		boolean accelExists = director.registerListener(this, director.getDefaultSensor(TYPE_ACCELEROMETER), SENSOR_DELAY_UI);
 		boolean orientExists = director.registerListener(this, director.getDefaultSensor(TYPE_ORIENTATION), SENSOR_DELAY_UI);
 		
@@ -77,6 +99,17 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		if(!orientExists)
 		{
 			director.unregisterListener(this, director.getDefaultSensor(TYPE_ORIENTATION));
+		}
+		
+		//Initializes network communication
+		if(wifi.isWifiEnabled())
+		{
+	        try {
+	        	clientSocket = new Socket(IP, 4444);
+	        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
+	        } catch (Exception e){ System.exit(-1);}
+	     
+	        outToServer.println("Does this work?");
 		}
 	}
 	
@@ -101,6 +134,12 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		case R.id.help:
 		{
 			Intent i = new Intent(AccelTest.this, Help.class);
+			startActivity(i);
+		}
+			return true;
+		case R.id.configure:
+		{
+			Intent i = new Intent(AccelTest.this, Configure.class);
 			startActivity(i);
 		}
 			return true;

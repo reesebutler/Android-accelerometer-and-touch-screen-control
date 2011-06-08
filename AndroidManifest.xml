@@ -4,6 +4,10 @@
 	package="com.lg.accel"
 	android:versionCode="1"
 	android:versionName="1.0">
+	<uses-permission
+		android:name="android.permission.INTERNET" />
+	<uses-permission
+		android:name="android.permission.ACCESS_WIFI_STATE" />
 
 
 	<application
@@ -27,6 +31,9 @@
 		<activity
 			android:name=".Help"
 			android:screenOrientation="portrait"></activity>
+		<activity
+			android:name=".Configure"></activity>
+
 
 	</application>
 </manifest>
