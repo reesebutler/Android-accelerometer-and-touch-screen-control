@@ -8,7 +8,9 @@ import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.Sensor.TYPE_ORIENTATION;
 import static android.hardware.SensorManager.SENSOR_DELAY_UI;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
@@ -41,10 +43,14 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	private String s1 = "X: 0\nY: 0\nZ: 0\n\nX: 0\nY: 0\nZ: 0";
 	private String s2 = "\nScroll info:\nX: 0\nY: 0";
 	protected static final int SUB_ACTIVITY_REQUEST_CODE = 100;
-	private static final String IP = "192.168.1.23";
+	private static String IP = "192.168.1.100";
 	private PrintWriter outToServer;
 	private Socket clientSocket;
 	private WifiManager wifi;
+	private FileInputStream in = null;
+	private InputStreamReader inReader = null;
+	char[] inputBuffer = new char[255];
+	private boolean connected = false;
 	
     /** Called when the activity is first created. */
     @Override
@@ -70,15 +76,18 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		director.unregisterListener(this, director.getDefaultSensor(TYPE_ORIENTATION));
 		director = null;
 		
-		if(outToServer != null)
+		if(connected)
+		{
 			outToServer.close();
-		
-		if(clientSocket != null)
-		try {
-			clientSocket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(-1);
+			
+			try {
+				clientSocket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.exit(-1);
+			}
+			
+			connected = false;
 		}
 	}
 	
@@ -101,16 +110,41 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 			director.unregisterListener(this, director.getDefaultSensor(TYPE_ORIENTATION));
 		}
 		
-		//Initializes network communication
+		//Attempts to retrieve any previously stored IP address
+		try{
+			in = openFileInput("settings.dat");
+			inReader = new InputStreamReader(in);
+			inReader.read(inputBuffer);
+			IP = new String(inputBuffer);
+			IP = IP.trim();
+		} catch (Exception e) {
+			e.printStackTrace();
+			IP = "192.168.1.100";
+		} finally {
+			try {
+				if(inReader != null && in != null)
+				{
+					inReader.close();
+					in.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		/*
+		//Initializes network communication 
 		if(wifi.isWifiEnabled())
 		{
 	        try {
 	        	clientSocket = new Socket(IP, 4444);
 	        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
-	        } catch (Exception e){ System.exit(-1);}
-	     
-	        outToServer.println("Does this work?");
+	        	connected = true;
+	        } catch (Exception e){ 
+	        	connected = false;
+	        }
 		}
+		else
+			connected = false; */
 	}
 	
 	/** Creates the menu */
@@ -143,12 +177,28 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 			startActivity(i);
 		}
 			return true;
+		case R.id.connect: //Initializes network communication 
+		{
+			if(wifi.isWifiEnabled())
+			{
+		        try {
+		        	clientSocket = new Socket(IP, 4444);
+		        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
+		        	connected = true;
+		        } catch (Exception e){ 
+		        	connected = false;
+		        }
+			}
+			else
+				connected = false;
+		}
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 	
-	/** Determines what to do with the sub-activity's results */
+	/** Determines what to do with the sub-activity's (Calibrate) results */
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)
 	{
 		super.onActivityResult(requestCode, resultCode, data);
@@ -164,7 +214,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	
 	public void onAccuracyChanged(Sensor sensor, int accuracy)
 	{
-		//As of now this method really doesn't need to do anything
+		//This method really doesn't need to do anything
 	}
 	
 	/** Called whenever any values from the sensors change */
@@ -183,9 +233,12 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				xFinal = x2 - dx;
 				yFinal = y2 - dy;
 				zFinal = z2 - dz;
-				s1 = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal;;
+				s1 = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal;
 				
 				display1.setText(s1); //Updates the display
+				
+				if(connected)
+					outToServer.println(xFinal + "," + yFinal + "," + zFinal); //Sends the output to the server 
 			}
 			if(event.sensor.getType() == TYPE_ACCELEROMETER)
 			{
