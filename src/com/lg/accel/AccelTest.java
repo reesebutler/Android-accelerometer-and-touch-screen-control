@@ -28,6 +28,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 /** Implements SensorEventListener for the accelerometer/orientation values
@@ -36,12 +37,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 {
 	//private static final String TAG = "MyActivity"; //For debugging purposes
 	private SensorManager director;
-	private TextView display1, display2;
+	private TextView display1;
 	private GestureDetector detector;
-	private float x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0, xFinal, yFinal, zFinal;
+	private float x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0, xFinal, yFinal, zFinal, distanceX, distanceY;
 	private float dx = 0, dy = 0, dz = 0;
-	private String s1 = "X: 0\nY: 0\nZ: 0\n\nX: 0\nY: 0\nZ: 0";
-	private String s2 = "\nScroll info:\nX: 0\nY: 0";
+	private String s1 = "X: 0\nY: 0\nZ: 0\n\nX: 0\nY: 0\nZ: 0\nScroll info:\nX: 0\nY: 0";
 	protected static final int SUB_ACTIVITY_REQUEST_CODE = 100;
 	private static String IP = "192.168.1.100";
 	private PrintWriter outToServer;
@@ -59,9 +59,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         display1 = (TextView) findViewById(R.id.display1);
-        display2 = (TextView) findViewById(R.id.display2);
         display1.setText(s1);
-        display2.setText(s2);
         detector = new GestureDetector(this, this); //Initializes the GestureDetector (for touch-screen input)
         detector.setIsLongpressEnabled(false);
     }
@@ -99,6 +97,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		wifi = (WifiManager) getSystemService(WIFI_SERVICE);
 		boolean accelExists = director.registerListener(this, director.getDefaultSensor(TYPE_ACCELEROMETER), SENSOR_DELAY_UI);
 		boolean orientExists = director.registerListener(this, director.getDefaultSensor(TYPE_ORIENTATION), SENSOR_DELAY_UI);
+		this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		
 		if(!accelExists)
 		{
@@ -131,20 +130,6 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				e.printStackTrace();
 			}
 		}
-		/*
-		//Initializes network communication 
-		if(wifi.isWifiEnabled())
-		{
-	        try {
-	        	clientSocket = new Socket(IP, 4444);
-	        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
-	        	connected = true;
-	        } catch (Exception e){ 
-	        	connected = false;
-	        }
-		}
-		else
-			connected = false; */
 	}
 	
 	/** Creates the menu */
@@ -233,28 +218,37 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				xFinal = x2 - dx;
 				yFinal = y2 - dy;
 				zFinal = z2 - dz;
-				s1 = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal;
+				s1 = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal + "\n\nX: " + distanceX + "\nY: " + distanceY;
 				
 				display1.setText(s1); //Updates the display
 				
+				//Sends the output to the server
 				if(connected)
-					outToServer.println(xFinal + "," + yFinal + "," + zFinal); //Sends the output to the server 
+					outToServer.println(xFinal + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY);  
 			}
 			if(event.sensor.getType() == TYPE_ACCELEROMETER)
 			{
 				x1 = event.values[0];
 				y1 = event.values[1];
 				z1 = event.values[2];
-				s1 = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal;
+				s1 = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal + "\n\nX: " + distanceX + "\nY: " + distanceY;
 					
 				display1.setText(s1); //Updates the display
+				
+				//Sends the output to the server
+				if(connected)
+					outToServer.println(xFinal + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY);  
 			}
 		}
 	}
 	
 	//a method of the View class which needs to be implemented for touch control to work
 	public boolean onTouchEvent(MotionEvent me)
-	{ 
+	{
+		//Resets scroll values to zero when the user stops touching the screen
+		if(me.getAction() == MotionEvent.ACTION_UP)
+			distanceX = 0; distanceY = 0;
+			
 		//Passes knowledge of the MotionEvent to the detector, which in turn allows the other OnGestureListener
 		//    methods to be called
 		return detector.onTouchEvent(me); 
@@ -280,10 +274,16 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	}
 	
 	/** Called when a scroll motion is made on the touch-screen */
-	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
+	public boolean onScroll(MotionEvent e1, MotionEvent e2, float newX, float newY)
 	{
-		String s2 = "\nScroll info:\nX: " + distanceX + "\nY: " + distanceY;
-		display2.setText(s2);
+		distanceX = newX;
+		distanceY = newY;
+		s1 = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal + "\n\nX: " + distanceX + "\nY: " + distanceY;
+		display1.setText(s1);
+		
+		//Sends the output to the server
+		if(connected)
+			outToServer.println(xFinal + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY);  
 		
 		return true;
 	}

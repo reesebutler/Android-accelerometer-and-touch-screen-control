@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== 
+     Jun 10, 2011 1:05:15 PM                                                        
+
+     Accel Test    
+     Android controller
+                   
+     Reese Butler                                                                
+     ====================================================================== -->
+<project name="Accel Test" default="default">
+    <description>
+            Android controller
+    </description>
+
+    <!-- ================================= 
+          target: default              
+         ================================= -->
+    <target name="default" depends="depends" description="Android controller">
+        
+    </target>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: depends                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="depends">
+    </target>
+
+</project>

@@ -14,7 +14,6 @@ import java.net.UnknownHostException;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -34,7 +33,7 @@ public class Configure extends Activity implements OnClickListener
 	char[] inputBuffer = new char[255];
 	String s = "";
 	boolean finished = false;
-	private static final String TAG = "MyActivity"; //For debugging purposes
+	//private static final String TAG = "MyActivity"; //For debugging purposes
 	
 	protected void onCreate(Bundle savedInstanceState) 
 	{
