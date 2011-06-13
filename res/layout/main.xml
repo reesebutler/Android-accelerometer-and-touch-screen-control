@@ -1,14 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<TableLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical"
 	android:layout_width="fill_parent"
-	android:layout_height="fill_parent">
+	android:layout_height="fill_parent"
+	android:id="@+id/layout_main"
+	android:stretchColumns="0">
 
-	<TextView
-		android:layout_width="fill_parent"
+	<TableRow>
+		<TextView
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:id="@+id/placeholder1"
+			android:textSize="80sp" />
+
+	</TableRow>
+	<TableRow
 		android:layout_height="wrap_content"
-		android:id="@+id/display1"
-		android:textSize="20sp" />
+		android:layout_width="wrap_content"
+		android:id="@+id/tableRow3">
+		<ImageButton
+			android:id="@+id/counterclockwise"
+			android:layout_gravity="left"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/counterclockwise"></ImageButton>
+		<ImageButton
+			android:id="@+id/clockwise"
+			android:layout_gravity="right"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/clockwise"></ImageButton>
+	</TableRow>
 
-</LinearLayout>
+	<TableRow>
+		<TextView
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:id="@+id/placdeholder2"
+			android:textSize="80sp" />
+
+	</TableRow>
+
+	<TableRow
+		android:layout_height="wrap_content"
+		android:layout_width="wrap_content"
+		android:id="@+id/tableRow1"
+		android:layout_gravity="bottom">
+		<ImageButton
+			android:id="@+id/downz"
+			android:layout_gravity="left"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/downz"></ImageButton>
+		<ImageButton
+			android:id="@+id/upz"
+			android:layout_gravity="right"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:src="@drawable/upz"></ImageButton>
+	</TableRow>
+
+	<TableRow>
+		<TextView
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:id="@+id/placeholder3"
+			android:textSize="30sp" />
+
+	</TableRow>
+
+	<TableRow
+		android:id="@+id/tableRow2"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content">
+		<Button
+			android:layout_gravity="center"
+			android:text="@string/freeze"
+			android:id="@+id/freeze"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:textSize="20sp">
+		</Button>
+	</TableRow>
+
+</TableLayout>

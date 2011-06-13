@@ -2,15 +2,18 @@
 <!-- ====================================================================== 
      Jun 10, 2011 1:05:15 PM                                                        
 
-     Accel Test    
+     Android Controller    
      Android controller
                    
      Reese Butler                                                                
      ====================================================================== -->
-<project name="Accel Test" default="default">
+<project name="Android Controller" default="default">
     <description>
             Android controller
     </description>
+	
+	<property name="src" value="src/com/lg/accel"/>
+	<property name="bin" value="bin/com/lg/accel"/>
 
     <!-- ================================= 
           target: default              

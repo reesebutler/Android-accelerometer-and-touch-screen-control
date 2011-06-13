@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="hello">I should not see this!</string>
-    <string name="app_name">Accel Test</string>
+    <string name="app_name">Android Controller</string>
     <string name="cal">Calibrate</string>
     <string name="help">Help</string>
     <string name="configure">Configure</string>
     <string name="save">Save</string>
     <string name="connect">Connect</string>
+    <string name="freeze">Freeze Output</string>
 </resources>

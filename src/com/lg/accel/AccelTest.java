@@ -1,5 +1,5 @@
 /** Reese Butler
- *  6/8/2011
+ *  6/13/2011
  */
 
 package com.lg.accel;
@@ -22,26 +22,32 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.WindowManager;
-import android.widget.TextView;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
 /** Implements SensorEventListener for the accelerometer/orientation values
 * Implements OnGestureListener for the scrolling (touch-screen) values */
-public class AccelTest extends Activity implements SensorEventListener, OnGestureListener
+public class AccelTest extends Activity implements SensorEventListener, OnGestureListener, OnClickListener, OnTouchListener
 {
-	//private static final String TAG = "MyActivity"; //For debugging purposes
+	private static final String TAG = "MyActivity"; //For debugging purposes
 	private SensorManager director;
-	private TextView display1;
 	private GestureDetector detector;
-	private float x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0, xFinal, yFinal, zFinal, distanceX, distanceY;
+	
+	@SuppressWarnings("unused")
+	private float x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0, xFinal, yFinal, zFinal, distanceX, distanceY, panZ = 0, roll = 0;
 	private float dx = 0, dy = 0, dz = 0;
-	private String s1 = "X: 0\nY: 0\nZ: 0\n\nX: 0\nY: 0\nZ: 0\nScroll info:\nX: 0\nY: 0";
 	protected static final int SUB_ACTIVITY_REQUEST_CODE = 100;
 	private static String IP = "192.168.1.100";
 	private PrintWriter outToServer;
@@ -50,7 +56,9 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	private FileInputStream in = null;
 	private InputStreamReader inReader = null;
 	char[] inputBuffer = new char[255];
-	private boolean connected = false;
+	private boolean connected = false, frozen = false;
+	private Button freezeButton;
+	private ImageButton cwiseButton, ccwiseButton, upButton, downButton;
 	
     /** Called when the activity is first created. */
     @Override
@@ -58,8 +66,19 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        display1 = (TextView) findViewById(R.id.display1);
-        display1.setText(s1);
+        
+        freezeButton = (Button) findViewById(R.id.freeze);
+        cwiseButton = (ImageButton) findViewById(R.id.clockwise);
+        ccwiseButton = (ImageButton) findViewById(R.id.counterclockwise);
+        upButton = (ImageButton) findViewById(R.id.upz);
+        downButton = (ImageButton) findViewById(R.id.downz);
+        
+        freezeButton.setOnClickListener(this);
+        cwiseButton.setOnTouchListener(this);
+        ccwiseButton.setOnTouchListener(this);
+        upButton.setOnTouchListener(this);
+        downButton.setOnTouchListener(this);
+        
         detector = new GestureDetector(this, this); //Initializes the GestureDetector (for touch-screen input)
         detector.setIsLongpressEnabled(false);
     }
@@ -97,7 +116,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		wifi = (WifiManager) getSystemService(WIFI_SERVICE);
 		boolean accelExists = director.registerListener(this, director.getDefaultSensor(TYPE_ACCELEROMETER), SENSOR_DELAY_UI);
 		boolean orientExists = director.registerListener(this, director.getDefaultSensor(TYPE_ORIENTATION), SENSOR_DELAY_UI);
-		this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		
+		if(!connected)
+		{
+			this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		}
 		
 		if(!accelExists)
 		{
@@ -170,12 +193,17 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		        	clientSocket = new Socket(IP, 4444);
 		        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
 		        	connected = true;
+		        	this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		        } catch (Exception e){ 
+		        	Toast.makeText(this, "Failed to connect to server (Master computer)", Toast.LENGTH_LONG).show();
 		        	connected = false;
 		        }
 			}
 			else
+			{
 				connected = false;
+				Toast.makeText(this, "Please enable Wi-Fi and try again", Toast.LENGTH_LONG).show();
+			}
 		}
 			return true;
 		default:
@@ -218,26 +246,24 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				xFinal = x2 - dx;
 				yFinal = y2 - dy;
 				zFinal = z2 - dz;
-				s1 = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal + "\n\nX: " + distanceX + "\nY: " + distanceY;
-				
-				display1.setText(s1); //Updates the display
 				
 				//Sends the output to the server
-				if(connected)
-					outToServer.println(xFinal + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY);  
+				if(connected && !frozen)
+					outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
+				else if(connected && frozen)
+					outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
 			}
 			if(event.sensor.getType() == TYPE_ACCELEROMETER)
 			{
 				x1 = event.values[0];
 				y1 = event.values[1];
 				z1 = event.values[2];
-				s1 = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal + "\n\nX: " + distanceX + "\nY: " + distanceY;
-					
-				display1.setText(s1); //Updates the display
 				
 				//Sends the output to the server
-				if(connected)
-					outToServer.println(xFinal + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY);  
+				if(connected && !frozen)
+					outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
+				else if(connected && frozen)
+					outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
 			}
 		}
 	}
@@ -245,6 +271,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	//a method of the View class which needs to be implemented for touch control to work
 	public boolean onTouchEvent(MotionEvent me)
 	{
+		Log.d(TAG, "This is in the onTouchEvent");
 		//Resets scroll values to zero when the user stops touching the screen
 		if(me.getAction() == MotionEvent.ACTION_UP)
 			distanceX = 0; distanceY = 0;
@@ -252,6 +279,36 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		//Passes knowledge of the MotionEvent to the detector, which in turn allows the other OnGestureListener
 		//    methods to be called
 		return detector.onTouchEvent(me); 
+	}
+	
+	/** Implemented to allow buttons to be pressed without a complete "onClick" call */
+	public boolean onTouch(View v, MotionEvent me)
+	{
+		if(me.getAction() == MotionEvent.ACTION_UP)
+		{
+			panZ = 0;
+			roll = 0;
+		}
+		
+		if(v == cwiseButton && me.getAction() == MotionEvent.ACTION_DOWN)
+			roll ++;
+		else if(v == ccwiseButton  && me.getAction() == MotionEvent.ACTION_DOWN)
+			roll --;
+		else if(v == upButton && me.getAction() == MotionEvent.ACTION_DOWN)
+			panZ ++;
+		else if(v == downButton && me.getAction() == MotionEvent.ACTION_DOWN)
+			panZ --;
+		
+		if(v == cwiseButton || v == ccwiseButton || v == upButton || v == downButton && me.getAction() == MotionEvent.ACTION_DOWN)
+		{
+			//Sends the output to the server
+			if(connected && !frozen)
+				outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
+			else if(connected && frozen)
+				outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
+		}
+		
+		return true;
 	}
 	
 	public boolean onDown(MotionEvent e)
@@ -278,13 +335,24 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	{
 		distanceX = newX;
 		distanceY = newY;
-		s1 = "X: " + x1 + "\nY: " + y1 + "\nZ: " + z1 + "\n\nX: " + xFinal + "\nY: " + yFinal + "\nZ: " + zFinal + "\n\nX: " + distanceX + "\nY: " + distanceY;
-		display1.setText(s1);
 		
 		//Sends the output to the server
-		if(connected)
-			outToServer.println(xFinal + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY);  
+		if(connected && !frozen)
+			outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
+		else if(connected && frozen)
+			outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
 		
 		return true;
+	}
+	
+	public void onClick(View v)
+	{
+		if(v == freezeButton)
+		{
+			if(frozen)
+				frozen = false;
+			else
+				frozen = true;
+		}
 	}
 }
