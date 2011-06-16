@@ -1,0 +1,16 @@
+ANDROID: 
+
+add box/circle/joystick-looking-thing in middle to represent "touchable" area
+make the buttons appear as though pressed
+update help screen
+add "About" page
+add ability to specify port
+make sure things scale well in different resolutions
+label pitch yaw and roll correctly
+show whether connection is successful
+
+
+SERVER:
+
+normalize values for easier use
+figure out the other axes

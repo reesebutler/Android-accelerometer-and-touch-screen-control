@@ -19,7 +19,8 @@ int sockfd, newsockfd, portnumber = 4444, client_length, n;
 char buffer[256]; //The character buffer used to grab the inputs
 struct sockaddr_in serv_addr, cli_addr; //Store the server and client addresses
 float x, y, z, pitch, yaw, roll = 0.0; //Store the input values
-int fifo;
+int newx, newy, newz, newpitch, newyaw, newroll = 0;
+int fifo, vflag = 0;
 char *pipe_name = "event12"; //The name of the pipe
 
 //Handles error messages
@@ -36,10 +37,17 @@ void write_value(int axis, float value)
 	
 	event.code = axis;
 	event.value = value;
-	event.type = EV_REL;
+	event.type = EV_ABS;
 	gettimeofday(&event.time, NULL);
 	
 	write(fifo, &event, sizeof(event));
+}
+
+//Prints values for debugging
+void print_verbose()
+{
+	printf("%8i %8i %8i %8i %8i %8i\n", newx, newy, newz, newpitch, newyaw, newroll);
+	//printf("%12i\n", test_iterator);
 }
 
 //Runs the server
@@ -99,12 +107,23 @@ void start_server(void)
 					}
 					sscanf(buffer, "%f,%f,%f,%f,%f,%f", &yaw, &pitch, &roll, &x, &y, &z);
 					
-					write_value(0, x);
-					write_value(1, y);
-					write_value(2, z);
-					write_value(3, pitch);
-					write_value(4, yaw);
-					write_value(5, roll);
+					newx = (int)x;
+					newy = (int)y;
+					newz = (int)z;
+					newpitch = (int)pitch;
+					newyaw = (int)yaw;
+					newroll = (int)roll;
+					
+					
+					write_value(0, -1*newx);
+					write_value(1, newy);
+					write_value(2, newz);
+					write_value(3, newpitch);
+					write_value(4, newyaw);
+					write_value(5, newroll); 
+					
+					if(vflag)
+						print_verbose();
 				}
 			}
 		}
@@ -118,27 +137,43 @@ void quit(int msg)
 {
 	signal(SIGINT, SIG_DFL);
 	printf("\nexiting...\n");
+	close(fifo);
 	exit(0);
 }
 
 int main(int argc, char* argv[])
 { 
-	if(argc != 3)
+
+	int c, hflag = 0;
+	
+	//Parses command-line arguments
+	while((c = getopt(argc, argv, "p:f:hv")) != -1)
 	{
-		printf("Usage: %s port# fifo\n", argv[0]);
-		printf("Use \"-\" for default values (port# = 4444; fifo = event12)\n\n");
-		close(fifo);
-		exit(1);
+		switch(c)
+		{
+			case 'p':
+				portnumber = atoi(optarg);
+				break;
+			case 'f':
+				pipe_name = optarg;
+				break;
+			case 'h':
+				hflag = 1;
+				break;
+			case 'v':
+				vflag = 1;
+				break;
+		}
 	}
 	
-	//initializes port number from the commandline
-	if(strcmp("-", argv[1]) != 0)
-		portnumber = atoi(argv[1]); 
+	//Prints the usage
+	if(hflag)
+	{
+		printf("Usage: %s [-p <port>] [-f <pipe_name>]\n\n", argv[0]);
+		exit(0);
+	}
 	
-	//initializes the pipe directory (name)
-	if(strcmp("-", argv[2]) != 0)
-		pipe_name = argv[2]; 
-
+	printf("waiting for Google Earth to open other end of pipe...\n");
 	fifo = open(pipe_name, O_WRONLY); //Opens the named pipe
 	
 	if(fifo < 0)
