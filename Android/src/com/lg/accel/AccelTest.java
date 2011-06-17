@@ -35,6 +35,7 @@ import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 /** Implements SensorEventListener for the accelerometer/orientation values
@@ -49,16 +50,17 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	private float x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0, xFinal, yFinal, zFinal, distanceX, distanceY, panZ = 0, roll = 0;
 	private float dx = 0, dy = 0, dz = 0;
 	protected static final int SUB_ACTIVITY_REQUEST_CODE = 100;
-	private static String IP = "192.168.1.100";
+	private static String IP = "192.168.1.100", port = "4444", dataString = "";
 	private PrintWriter outToServer;
 	private Socket clientSocket;
 	private WifiManager wifi;
 	private FileInputStream in = null;
 	private InputStreamReader inReader = null;
 	char[] inputBuffer = new char[255];
-	private boolean connected = false, frozen = false;
-	private Button freezeButton;
+	private boolean connected = false, frozen = false, shouldBeConnected = false;
+	private Button freezeButton, calibrateButton;
 	private ImageButton cwiseButton, ccwiseButton, upButton, downButton;
+	private ImageView connectivity_icon;
 	
     /** Called when the activity is first created. */
     @Override
@@ -68,12 +70,14 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
         setContentView(R.layout.main);
         
         freezeButton = (Button) findViewById(R.id.freeze);
+        calibrateButton = (Button) findViewById(R.id.calibrate);
         cwiseButton = (ImageButton) findViewById(R.id.clockwise);
         ccwiseButton = (ImageButton) findViewById(R.id.counterclockwise);
         upButton = (ImageButton) findViewById(R.id.upz);
         downButton = (ImageButton) findViewById(R.id.downz);
         
         freezeButton.setOnClickListener(this);
+        calibrateButton.setOnClickListener(this);
         cwiseButton.setOnTouchListener(this);
         ccwiseButton.setOnTouchListener(this);
         upButton.setOnTouchListener(this);
@@ -92,20 +96,6 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		director.unregisterListener(this, director.getDefaultSensor(TYPE_ACCELEROMETER));
 		director.unregisterListener(this, director.getDefaultSensor(TYPE_ORIENTATION));
 		director = null;
-		
-		if(connected)
-		{
-			outToServer.close();
-			
-			try {
-				clientSocket.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-				System.exit(-1);
-			}
-			
-			connected = false;
-		}
 	}
 	
 	/** Called after the application is started or resumed */
@@ -132,16 +122,19 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 			director.unregisterListener(this, director.getDefaultSensor(TYPE_ORIENTATION));
 		}
 		
-		//Attempts to retrieve any previously stored IP address
+		//Attempts to retrieve any previously stored IP address and port
 		try{
 			in = openFileInput("settings.dat");
 			inReader = new InputStreamReader(in);
 			inReader.read(inputBuffer);
-			IP = new String(inputBuffer);
-			IP = IP.trim();
+			dataString = new String(inputBuffer);
+			dataString = dataString.trim();
+			IP = dataString.substring(0, dataString.indexOf(","));
+			port = dataString.substring(dataString.indexOf(",") + 1);
 		} catch (Exception e) {
 			e.printStackTrace();
-			IP = "192.168.1.100";
+			Intent i = new Intent(AccelTest.this, Configure.class);
+			startActivityForResult(i, SUB_ACTIVITY_REQUEST_CODE);
 		} finally {
 			try {
 				if(inReader != null && in != null)
@@ -151,6 +144,29 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
+			}
+		}
+		
+		//Attempts to connect if the user pressed "connect" in the configure screen
+		if(shouldBeConnected && !connected)
+		{
+			if(wifi.isWifiEnabled())
+			{
+		        try {
+		        	clientSocket = new Socket(IP, Integer.parseInt(port));
+		        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
+		        	connected = true;
+		        	this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		        	Toast.makeText(this, "Connected successfully", Toast.LENGTH_SHORT).show();
+		        } catch (Exception e){ 
+		        	Toast.makeText(this, "Failed to connect to server", Toast.LENGTH_LONG).show();
+		        	connected = false;
+		        }
+			}
+			else
+			{
+				connected = false;
+				Toast.makeText(this, "Please enable Wi-Fi to connect", Toast.LENGTH_LONG).show();
 			}
 		}
 	}
@@ -167,12 +183,6 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	public boolean onOptionsItemSelected(MenuItem item)
 	{
 		switch (item.getItemId()){
-		case R.id.calibrate:
-		{
-			Intent i = new Intent(AccelTest.this, Calibrate.class);
-			startActivityForResult(i, SUB_ACTIVITY_REQUEST_CODE);
-		}
-			return true;
 		case R.id.help:
 		{
 			Intent i = new Intent(AccelTest.this, Help.class);
@@ -182,27 +192,25 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		case R.id.configure:
 		{
 			Intent i = new Intent(AccelTest.this, Configure.class);
-			startActivity(i);
+			startActivityForResult(i, SUB_ACTIVITY_REQUEST_CODE);
 		}
 			return true;
 		case R.id.connect: //Initializes network communication 
 		{
-			if(wifi.isWifiEnabled())
+			shouldBeConnected = false;
+			
+			if(connected)
 			{
-		        try {
-		        	clientSocket = new Socket(IP, 4444);
-		        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
-		        	connected = true;
-		        	this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		        } catch (Exception e){ 
-		        	Toast.makeText(this, "Failed to connect to server (Master computer)", Toast.LENGTH_LONG).show();
-		        	connected = false;
-		        }
-			}
-			else
-			{
+				outToServer.close();
+				
+				try {
+					clientSocket.close();
+					Toast.makeText(this, "Successfully disconnected", Toast.LENGTH_SHORT).show();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
 				connected = false;
-				Toast.makeText(this, "Please enable Wi-Fi and try again", Toast.LENGTH_LONG).show();
 			}
 		}
 			return true;
@@ -218,10 +226,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		
 		if(requestCode == SUB_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK)
 		{
-			Bundle b = data.getExtras();
-			dx = b.getFloat("0");
-			dy = b.getFloat("1");
-			dz = b.getFloat("2");
+			shouldBeConnected = true;
 		}
 	}
 	
@@ -233,7 +238,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	/** Called whenever any values from the sensors change */
 	public void onSensorChanged(SensorEvent event)
 	{
-		synchronized(this) //I still don't know for sure if this line is necessary. If anyone reading my code knows, please inform me.
+		synchronized(this) //I still don't know for sure if this line is completely necessary. If anyone reading my code knows, please inform me.
 		{
 			if(event.sensor.getType() == TYPE_ORIENTATION)
 			{
@@ -250,8 +255,6 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				//Sends the output to the server
 				if(connected && !frozen)
 					outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
-				else if(connected && frozen)
-					outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
 			}
 			if(event.sensor.getType() == TYPE_ACCELEROMETER)
 			{
@@ -262,8 +265,6 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				//Sends the output to the server
 				if(connected && !frozen)
 					outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
-				else if(connected && frozen)
-					outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
 			}
 		}
 	}
@@ -304,8 +305,6 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 			//Sends the output to the server
 			if(connected && !frozen)
 				outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
-			else if(connected && frozen)
-				outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
 		}
 		
 		return true;
@@ -339,12 +338,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		//Sends the output to the server
 		if(connected && !frozen)
 			outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
-		else if(connected && frozen)
-			outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
 		
 		return true;
 	}
 	
+	/** Called when an area of the screen is clicked (i.e. a button) */
 	public void onClick(View v)
 	{
 		if(v == freezeButton)
@@ -353,6 +351,13 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				frozen = false;
 			else
 				frozen = true;
+		}
+		
+		if(v == calibrateButton)
+		{
+			dx = x2;
+			dy = y2;
+			dz = z2;
 		}
 	}
 }

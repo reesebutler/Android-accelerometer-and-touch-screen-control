@@ -1,0 +1,4 @@
+1. When user first starts the app, they will be shown the configure screen. They will set the values, then press the "connect" button (formerly known as "save"). This will return them to the main screen, and the app will now try to connect to the server.
+
+2. While connected to the server, the user goes to the help or about screen. This will disconnect the app from the server. Upon returning to the main screen, the app will automatically reconnect.
+

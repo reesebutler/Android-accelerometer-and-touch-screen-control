@@ -7,11 +7,30 @@
 	android:stretchColumns="0">
 
 	<TableRow>
+		<Button
+			android:layout_gravity="center"
+			android:text="@string/cal"
+			android:id="@+id/calibrate"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:textSize="20sp">
+		</Button>
+
+		<ImageView
+			android:id="@+id/connectivity_icon"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="right"/>
+
+	</TableRow>
+
+	<TableRow>
 		<TextView
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
 			android:id="@+id/placeholder1"
-			android:textSize="80sp" />
+			android:textSize="60sp" />
 
 	</TableRow>
 	<TableRow
