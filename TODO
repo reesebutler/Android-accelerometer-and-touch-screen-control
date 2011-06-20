@@ -9,9 +9,10 @@ show whether connection is successful
 restrict scroll event to some section in the middle of the screen
 add box/circle/joystick-looking-thing in middle to represent "touchable" area
 add colored circle to top-right of main screen: green for connected, yellow for output frozen, and red for disconnected
+set shouldBeConnected to false in onDestroy()
+make app realize when the server has shutdown and toggle connection flag
+allow screen to turn off when the app isn't connected to the server
 
 SERVER:
 
 normalize values for easier use
-figure out the other axes
-reverse pitch values

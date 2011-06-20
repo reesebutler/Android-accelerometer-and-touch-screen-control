@@ -46,8 +46,23 @@ void write_value(int axis, float value)
 //Prints values for debugging
 void print_verbose()
 {
-	printf("%8i %8i %8i %8i %8i %8i\n", newx, newy, newz, newpitch, newyaw, newroll);
-	//printf("%12i\n", test_iterator);
+	printf("%10f %10f %10f %10f %10f %10f\n", x, y, z, pitch, yaw, roll);
+}
+
+//Normalizes the input values
+float normalize_value(int axis, float value)
+{
+	if(axis == 0 || axis == 1)
+		return value * 6;
+	else if(axis == 2)
+		return value * 40;
+	else if(axis == 3)
+		return value * -4;
+	else if(axis == 4)
+		return value * 4;
+	else if(axis == 5)
+		return value * 80;
+	return 0;
 }
 
 //Runs the server
@@ -114,13 +129,19 @@ void start_server(void)
 					newyaw = (int)yaw;
 					newroll = (int)roll;
 					
+					x = normalize_value(0, x);
+					y = normalize_value(1, y);
+					z = normalize_value(2, z);
+					pitch = normalize_value(3, pitch);
+					roll = normalize_value(4, roll);
+					yaw = normalize_value(5, yaw);
 					
-					write_value(0, -1*newx);
-					write_value(1, newy);
-					write_value(2, newz);
-					write_value(3, newpitch);
-					write_value(4, newyaw);
-					write_value(5, newroll); 
+					write_value(0, x); //x
+					write_value(1, y); //y
+					write_value(2, z); //z
+					write_value(3, pitch); //pitch
+					//write_value(4, yaw); //roll
+					write_value(5, roll); //yaw
 					
 					if(vflag)
 						print_verbose();
