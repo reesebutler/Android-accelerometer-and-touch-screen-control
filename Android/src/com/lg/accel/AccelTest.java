@@ -22,7 +22,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.Menu;
@@ -42,7 +41,6 @@ import android.widget.Toast;
 * Implements OnGestureListener for the scrolling (touch-screen) values */
 public class AccelTest extends Activity implements SensorEventListener, OnGestureListener, OnClickListener, OnTouchListener
 {
-	private static final String TAG = "MyActivity"; //For debugging purposes
 	private SensorManager director;
 	private GestureDetector detector;
 	
@@ -57,9 +55,9 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	private FileInputStream in = null;
 	private InputStreamReader inReader = null;
 	char[] inputBuffer = new char[255];
-	private boolean connected = false, frozen = false, shouldBeConnected = false;
+	private boolean connected = false, frozen = false, shouldBeConnected = false, firstTimeFrozen = false;
 	private Button freezeButton, calibrateButton;
-	private ImageButton cwiseButton, ccwiseButton, upButton, downButton;
+	private ImageButton upButton, downButton;
 	private ImageView connectivity_icon;
 	
     /** Called when the activity is first created. */
@@ -69,17 +67,19 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
+        connectivity_icon = (ImageView) findViewById(R.id.connectivity_icon);
+        connectivity_icon.setAdjustViewBounds(true);
+        connectivity_icon.setMaxHeight(45);
+        connectivity_icon.setMaxWidth(45);
+        connectivity_icon.setImageResource(R.drawable.red_icon);
+        
         freezeButton = (Button) findViewById(R.id.freeze);
         calibrateButton = (Button) findViewById(R.id.calibrate);
-        cwiseButton = (ImageButton) findViewById(R.id.clockwise);
-        ccwiseButton = (ImageButton) findViewById(R.id.counterclockwise);
         upButton = (ImageButton) findViewById(R.id.upz);
         downButton = (ImageButton) findViewById(R.id.downz);
         
         freezeButton.setOnClickListener(this);
         calibrateButton.setOnClickListener(this);
-        cwiseButton.setOnTouchListener(this);
-        ccwiseButton.setOnTouchListener(this);
         upButton.setOnTouchListener(this);
         downButton.setOnTouchListener(this);
         
@@ -158,9 +158,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		        	connected = true;
 		        	this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		        	Toast.makeText(this, "Connected successfully", Toast.LENGTH_SHORT).show();
+		        	connectivity_icon.setImageResource(R.drawable.green_icon);
 		        } catch (Exception e){ 
 		        	Toast.makeText(this, "Failed to connect to server", Toast.LENGTH_LONG).show();
 		        	connected = false;
+		        	shouldBeConnected = false;
 		        }
 			}
 			else
@@ -169,6 +171,33 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				Toast.makeText(this, "Please enable Wi-Fi to connect", Toast.LENGTH_LONG).show();
 			}
 		}
+		
+		if(!shouldBeConnected && !connected)
+		{
+			Intent i = new Intent(AccelTest.this, Configure.class);
+			startActivityForResult(i, SUB_ACTIVITY_REQUEST_CODE);
+		}
+	}
+	
+	/** Called when the application ends */
+	protected void onDestroy()
+	{ 
+		super.onDestroy();
+		shouldBeConnected = false;
+		
+		if(connected)
+		{
+			outToServer.close();
+			
+			try {
+				clientSocket.close();
+				Toast.makeText(this, "Successfully disconnected", Toast.LENGTH_SHORT).show();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			connected = false;
+		} 
 	}
 	
 	/** Creates the menu */
@@ -195,7 +224,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 			startActivityForResult(i, SUB_ACTIVITY_REQUEST_CODE);
 		}
 			return true;
-		case R.id.connect: //Initializes network communication 
+		case R.id.connect: //Disconnects from the server 
 		{
 			shouldBeConnected = false;
 			
@@ -211,7 +240,10 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				}
 				
 				connected = false;
+				connectivity_icon.setImageResource(R.drawable.red_icon);
 			}
+			
+			this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		}
 			return true;
 		default:
@@ -227,6 +259,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		if(requestCode == SUB_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK)
 		{
 			shouldBeConnected = true;
+			frozen = false;
 		}
 	}
 	
@@ -255,6 +288,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				//Sends the output to the server
 				if(connected && !frozen)
 					outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
+				else if(connected && frozen && firstTimeFrozen)
+				{
+					outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
+					firstTimeFrozen = false;
+				}
 			}
 			if(event.sensor.getType() == TYPE_ACCELEROMETER)
 			{
@@ -265,6 +303,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				//Sends the output to the server
 				if(connected && !frozen)
 					outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
+				else if(connected && frozen && firstTimeFrozen)
+				{
+					outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
+					firstTimeFrozen = false;
+				}
 			}
 		}
 	}
@@ -272,7 +315,6 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	//a method of the View class which needs to be implemented for touch control to work
 	public boolean onTouchEvent(MotionEvent me)
 	{
-		Log.d(TAG, "This is in the onTouchEvent");
 		//Resets scroll values to zero when the user stops touching the screen
 		if(me.getAction() == MotionEvent.ACTION_UP)
 			distanceX = 0; distanceY = 0;
@@ -291,20 +333,21 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 			roll = 0;
 		}
 		
-		if(v == cwiseButton && me.getAction() == MotionEvent.ACTION_DOWN)
-			roll ++;
-		else if(v == ccwiseButton  && me.getAction() == MotionEvent.ACTION_DOWN)
-			roll --;
-		else if(v == upButton && me.getAction() == MotionEvent.ACTION_DOWN)
+		if(v == upButton && me.getAction() == MotionEvent.ACTION_DOWN)
 			panZ ++;
 		else if(v == downButton && me.getAction() == MotionEvent.ACTION_DOWN)
 			panZ --;
 		
-		if(v == cwiseButton || v == ccwiseButton || v == upButton || v == downButton && me.getAction() == MotionEvent.ACTION_DOWN)
+		if(v == upButton || v == downButton && me.getAction() == MotionEvent.ACTION_DOWN)
 		{
 			//Sends the output to the server
 			if(connected && !frozen)
-				outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
+				outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ);
+			else if(connected && frozen && firstTimeFrozen)
+			{
+				outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
+				firstTimeFrozen = false;
+			}
 		}
 		
 		return true;
@@ -338,6 +381,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		//Sends the output to the server
 		if(connected && !frozen)
 			outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
+		else if(connected && frozen && firstTimeFrozen)
+		{
+			outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
+			firstTimeFrozen = false;
+		}
 		
 		return true;
 	}
@@ -348,9 +396,20 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		if(v == freezeButton)
 		{
 			if(frozen)
+			{
 				frozen = false;
+				
+				if(connected)
+					connectivity_icon.setImageResource(R.drawable.green_icon);
+			}
 			else
+			{
 				frozen = true;
+				firstTimeFrozen = true;
+				
+				if(connected)
+					connectivity_icon.setImageResource(R.drawable.yellow_icon);
+			}
 		}
 		
 		if(v == calibrateButton)
