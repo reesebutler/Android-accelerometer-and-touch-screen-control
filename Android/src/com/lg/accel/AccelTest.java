@@ -8,6 +8,7 @@ import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.Sensor.TYPE_ORIENTATION;
 import static android.hardware.SensorManager.SENSOR_DELAY_UI;
 
+import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,6 +23,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.Menu;
@@ -47,9 +49,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	@SuppressWarnings("unused")
 	private float x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0, xFinal, yFinal, zFinal, distanceX, distanceY, panZ = 0, roll = 0;
 	private float dx = 0, dy = 0, dz = 0;
-	protected static final int SUB_ACTIVITY_REQUEST_CODE = 100;
+	private static final int SUB_ACTIVITY_REQUEST_CODE = 100;
+	private int counter = 0;
 	private static String IP = "192.168.1.100", port = "4444", dataString = "";
 	private PrintWriter outToServer;
+	private DataInputStream inFromServer;
 	private Socket clientSocket;
 	private WifiManager wifi;
 	private FileInputStream in = null;
@@ -155,10 +159,12 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		        try {
 		        	clientSocket = new Socket(IP, Integer.parseInt(port));
 		        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
+		        	inFromServer = new DataInputStream(clientSocket.getInputStream());
 		        	connected = true;
 		        	this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		        	Toast.makeText(this, "Connected successfully", Toast.LENGTH_SHORT).show();
 		        	connectivity_icon.setImageResource(R.drawable.green_icon);
+		        	counter = 0;
 		        } catch (Exception e){ 
 		        	Toast.makeText(this, "Failed to connect to server", Toast.LENGTH_LONG).show();
 		        	connected = false;
@@ -183,21 +189,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	protected void onDestroy()
 	{ 
 		super.onDestroy();
-		shouldBeConnected = false;
-		
-		if(connected)
-		{
-			outToServer.close();
-			
-			try {
-				clientSocket.close();
-				Toast.makeText(this, "Successfully disconnected", Toast.LENGTH_SHORT).show();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-			connected = false;
-		} 
+		disconnect(); 
 	}
 	
 	/** Creates the menu */
@@ -226,26 +218,13 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 			return true;
 		case R.id.connect: //Disconnects from the server 
 		{
-			shouldBeConnected = false;
-			
-			if(connected)
-			{
-				outToServer.close();
-				
-				try {
-					clientSocket.close();
-					Toast.makeText(this, "Successfully disconnected", Toast.LENGTH_SHORT).show();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				
-				connected = false;
-				connectivity_icon.setImageResource(R.drawable.red_icon);
-			}
-			
-			this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+			disconnect();
 		}
 			return true;
+		case R.id.quit:
+		{
+			quit();
+		}
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -260,6 +239,10 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		{
 			shouldBeConnected = true;
 			frozen = false;
+		}
+		else if(requestCode == SUB_ACTIVITY_REQUEST_CODE && resultCode == RESULT_CANCELED && !shouldBeConnected)
+		{
+			quit();
 		}
 	}
 	
@@ -293,6 +276,26 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 					outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
 					firstTimeFrozen = false;
 				}
+				
+				//Makes sure the app is still connected to the server
+				if(counter % 10 == 0 && connected)
+				{
+					String tmpstr = null;
+					
+					try {
+						tmpstr = inFromServer.readLine();
+					} catch (IOException e) {
+						disconnect();
+					}
+					
+					if(tmpstr == null)
+						disconnect();
+					
+					counter = 0;
+				}
+				
+				if(connected)
+					counter ++;
 			}
 			if(event.sensor.getType() == TYPE_ACCELEROMETER)
 			{
@@ -418,5 +421,32 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 			dy = y2;
 			dz = z2;
 		}
+	}
+	
+	private void quit()
+	{
+		onDestroy();
+		finish();
+	}
+	
+	private void disconnect()
+	{
+		shouldBeConnected = false;
+		
+		if(connected)
+		{
+			outToServer.close();
+			
+			try {
+				clientSocket.close();
+				Toast.makeText(this, "Successfully disconnected", Toast.LENGTH_SHORT).show();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			connected = false;
+			connectivity_icon.setImageResource(R.drawable.red_icon);
+			this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		} 
 	}
 }

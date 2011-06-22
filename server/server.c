@@ -21,6 +21,7 @@ struct sockaddr_in serv_addr, cli_addr; //Store the server and client addresses
 float x, y, z, pitch, yaw, roll = 0.0; //Store the input values
 int newx, newy, newz, newpitch, newyaw, newroll = 0;
 int fifo, vflag = 0;
+int counter = 0;
 char *pipe_name = "event12"; //The name of the pipe
 
 //Handles error messages
@@ -106,19 +107,20 @@ void start_server(void)
 			{
 				n = read(newsockfd, buffer, 255);
 				
-				if(n <= 0)
+				if(n <= 0) //If the read fails
 				{
 					printf("connection lost\n");
 					printf("waiting for client connection...\n");
 					first = 1;
 					exit(0);
 				}
-				else
+				else //If the read is successful
 				{
 					if(first)
 					{
 						printf("connected successfully!\n");
 						first = 0;
+						counter = 0;
 					}
 					sscanf(buffer, "%f,%f,%f,%f,%f,%f", &yaw, &pitch, &roll, &x, &y, &z);
 					
@@ -145,6 +147,14 @@ void start_server(void)
 					
 					if(vflag)
 						print_verbose();
+						
+					if(counter % 10 == 0)
+					{
+						write(newsockfd,"I got your message",18);
+						counter = 0;
+					}
+					printf("\ncounter: %i", counter);
+					counter ++;
 				}
 			}
 		}
@@ -153,11 +163,12 @@ void start_server(void)
 	}
 }
 
-//Called when the program end (most likely when the user presses ctrl+c)
+//Called when the program ends (most likely when the user presses ctrl+c)
 void quit(int msg)
 {
 	signal(SIGINT, SIG_DFL);
 	printf("\nexiting...\n");
+	close(newsockfd);
 	close(fifo);
 	exit(0);
 }

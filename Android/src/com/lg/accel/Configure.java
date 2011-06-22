@@ -113,7 +113,7 @@ public class Configure extends Activity implements OnClickListener
 	public boolean onCreateOptionsMenu(Menu menu) 
 	{
 	    MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.menu.menu, menu);
+	    inflater.inflate(R.menu.config_menu, menu);
 	    return true;
 	}
 	
@@ -125,8 +125,14 @@ public class Configure extends Activity implements OnClickListener
 		{
 			Intent i = new Intent(Configure.this, Help.class);
 			startActivity(i);
-		}
 			return true;
+		}
+		case R.id.quit:
+		{
+			setResult(RESULT_CANCELED);
+			finish();
+			return true;
+		}
 		default:
 			return super.onOptionsItemSelected(item);
 		}
