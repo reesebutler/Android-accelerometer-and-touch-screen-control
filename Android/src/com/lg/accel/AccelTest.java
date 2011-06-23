@@ -8,7 +8,7 @@ import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.Sensor.TYPE_ORIENTATION;
 import static android.hardware.SensorManager.SENSOR_DELAY_UI;
 
-import java.io.DataInputStream;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,7 +23,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.Menu;
@@ -50,10 +49,9 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	private float x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0, xFinal, yFinal, zFinal, distanceX, distanceY, panZ = 0, roll = 0;
 	private float dx = 0, dy = 0, dz = 0;
 	private static final int SUB_ACTIVITY_REQUEST_CODE = 100;
-	private int counter = 0;
 	private static String IP = "192.168.1.100", port = "4444", dataString = "";
 	private PrintWriter outToServer;
-	private DataInputStream inFromServer;
+	private BufferedReader inFromServer;
 	private Socket clientSocket;
 	private WifiManager wifi;
 	private FileInputStream in = null;
@@ -159,12 +157,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		        try {
 		        	clientSocket = new Socket(IP, Integer.parseInt(port));
 		        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
-		        	inFromServer = new DataInputStream(clientSocket.getInputStream());
+		        	inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		        	connected = true;
 		        	this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		        	Toast.makeText(this, "Connected successfully", Toast.LENGTH_SHORT).show();
 		        	connectivity_icon.setImageResource(R.drawable.green_icon);
-		        	counter = 0;
 		        } catch (Exception e){ 
 		        	Toast.makeText(this, "Failed to connect to server", Toast.LENGTH_LONG).show();
 		        	connected = false;
@@ -189,7 +186,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	protected void onDestroy()
 	{ 
 		super.onDestroy();
-		disconnect(); 
+		disconnect(true); 
 	}
 	
 	/** Creates the menu */
@@ -218,7 +215,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 			return true;
 		case R.id.connect: //Disconnects from the server 
 		{
-			disconnect();
+			disconnect(true);
 		}
 			return true;
 		case R.id.quit:
@@ -268,35 +265,9 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				yFinal = y2 - dy;
 				zFinal = z2 - dz;
 				
-				//Sends the output to the server
-				if(connected && !frozen)
-					outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
-				else if(connected && frozen && firstTimeFrozen)
-				{
-					outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
-					firstTimeFrozen = false;
-				}
-				
-				//Makes sure the app is still connected to the server
-				if(counter % 10 == 0 && connected)
-				{
-					String tmpstr = null;
-					
-					try {
-						tmpstr = inFromServer.readLine();
-					} catch (IOException e) {
-						disconnect();
-					}
-					
-					if(tmpstr == null)
-						disconnect();
-					
-					counter = 0;
-				}
-				
-				if(connected)
-					counter ++;
-			}
+				sendValues();
+				checkConnection();
+			} /*
 			if(event.sensor.getType() == TYPE_ACCELEROMETER)
 			{
 				x1 = event.values[0];
@@ -311,7 +282,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 					outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
 					firstTimeFrozen = false;
 				}
-			}
+			} */
 		}
 	}
 	
@@ -343,14 +314,8 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		
 		if(v == upButton || v == downButton && me.getAction() == MotionEvent.ACTION_DOWN)
 		{
-			//Sends the output to the server
-			if(connected && !frozen)
-				outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ);
-			else if(connected && frozen && firstTimeFrozen)
-			{
-				outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
-				firstTimeFrozen = false;
-			}
+			sendValues();
+			checkConnection();
 		}
 		
 		return true;
@@ -381,14 +346,8 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		distanceX = newX;
 		distanceY = newY;
 		
-		//Sends the output to the server
-		if(connected && !frozen)
-			outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
-		else if(connected && frozen && firstTimeFrozen)
-		{
-			outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
-			firstTimeFrozen = false;
-		}
+		sendValues();
+		checkConnection();
 		
 		return true;
 	}
@@ -429,7 +388,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		finish();
 	}
 	
-	private void disconnect()
+	private void disconnect(boolean intended)
 	{
 		shouldBeConnected = false;
 		
@@ -439,7 +398,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 			
 			try {
 				clientSocket.close();
-				Toast.makeText(this, "Successfully disconnected", Toast.LENGTH_SHORT).show();
+				
+				if(intended)
+					Toast.makeText(this, "Successfully disconnected", Toast.LENGTH_SHORT).show();
+				else
+					Toast.makeText(this, "Lost connection to server", Toast.LENGTH_LONG).show();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -448,5 +411,35 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 			connectivity_icon.setImageResource(R.drawable.red_icon);
 			this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		} 
+	}
+	
+	/** Sends the output of sensor values to the server */
+	private void sendValues()
+	{
+		if(connected && !frozen)
+			outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
+		else if(connected && frozen && firstTimeFrozen)
+		{
+			outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
+			firstTimeFrozen = false;
+		}
+	}
+	
+	/** Makes sure the app is still connected to the server */
+	private void checkConnection()
+	{
+		if(!frozen || firstTimeFrozen)
+		{
+			String tmpstr = null;
+			
+			try {
+				tmpstr = inFromServer.readLine();
+			} catch (IOException e) {
+				disconnect(false);
+			}
+			
+			if(tmpstr == null)
+				disconnect(false);
+		}
 	}
 }

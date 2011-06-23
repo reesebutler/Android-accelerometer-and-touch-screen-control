@@ -57,7 +57,7 @@ float normalize_value(int axis, float value)
 		return value * 6;
 	else if(axis == 2)
 		return value * 40;
-	else if(axis == 3)
+	else if(axis == 3 && value != 0)
 		return value * -4;
 	else if(axis == 4)
 		return value * 4;
@@ -147,14 +147,8 @@ void start_server(void)
 					
 					if(vflag)
 						print_verbose();
-						
-					if(counter % 10 == 0)
-					{
-						write(newsockfd,"I got your message",18);
-						counter = 0;
-					}
-					printf("\ncounter: %i", counter);
-					counter ++;
+	
+					write(newsockfd,"I got your message\n",19);
 				}
 			}
 		}
