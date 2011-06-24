@@ -1,1 +1,15 @@
-This version of the application collects accelerometer, orientation, and touch screen data from Android sensors. Currently this is compiled for Android API version 8 (Android system version 2.2).
+This version of the application collects accelerometer, orientation, and touch screen data from an Android device's sensors. Currently this is compiled for Android API version 8 (Android system version 2.2).
+
+FAQS:
+
+Q: Why doesn't it connect?
+A: Make sure you are using the correct IP address and port number of the computer that is running the server. You should also only use a LAN IP (not the WAN).
+
+Q: The touch-screen panning sometimes doesn't work, why?
+A: When you try panning, start the motion on a part of the screen that is not a button. Otherwise no motion information will be sent.
+
+Q: Where can I get the server application?
+A: The server is written for linux systems, and you can download it here: https://github.com/reesebutler/Android-accelerometer-and-touch-screen-control/tree/master/server
+
+Q: The server doesn't run, why? 
+A: Make sure that the file called "server" is executable. If it still does not work, try recompiling the server application. To do this, open a terminal window, navigate to the directory of the server, and type "make server". 
