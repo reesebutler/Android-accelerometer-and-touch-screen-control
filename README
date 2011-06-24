@@ -6,10 +6,10 @@ Q: Why doesn't it connect?
 A: Make sure you are using the correct IP address and port number of the computer that is running the server. You should also only use a LAN IP (not the WAN).
 
 Q: The touch-screen panning sometimes doesn't work, why?
-A: When you try panning, start the motion on a part of the screen that is not a button. Otherwise no motion information will be sent.
+A: When you try to pan, start the motion on a part of the screen that is not a button. Otherwise no motion information will be sent.
 
 Q: Where can I get the server application?
 A: The server is written for linux systems, and you can download it here: https://github.com/reesebutler/Android-accelerometer-and-touch-screen-control/tree/master/server
 
 Q: The server doesn't run, why? 
-A: Make sure that the file called "server" is executable. If it still does not work, try recompiling the server application. To do this, open a terminal window, navigate to the directory of the server, and type "make server". 
+A: Make sure that the file called "server" is executable. If it still does not work, try recompiling the server application. To do this, open a terminal window, navigate to the directory of the downloaded server files, and type "make server". 

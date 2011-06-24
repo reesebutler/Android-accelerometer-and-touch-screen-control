@@ -5,45 +5,56 @@
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
 
-	<TextView
-		android:text="Set server (master) IP:"
-		android:textSize="20sp"
+	<ScrollView
+		android:id="@+id/scroll"
 		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:id="@+id/textView1" />
+		android:layout_height="wrap_content">
+		<LinearLayout
+			android:orientation="vertical"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent">
+			
+			<TextView
+				android:text="Set server (master) IP:"
+				android:textSize="20sp"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/textView1" />
 
-	<EditText
-		android:id="@+id/IPtext"
-		android:singleLine="true"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content" />
-		
-	<TextView
-		android:text="\nSet server port:"
-		android:textSize="20sp"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:id="@+id/textView2" />
-		
-	<EditText
-		android:id="@+id/porttext"
-		android:singleLine="true"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content" />
-		
-	<TextView
-		android:text=""
-		android:textSize="20sp"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:id="@+id/textView3" />
+			<EditText
+				android:id="@+id/IPtext"
+				android:singleLine="true"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content" />
 
-	<Button
-		android:layout_width="wrap_content"
-		android:id="@+id/button2"
-		android:layout_height="wrap_content"
-		android:textSize="22sp"
-		android:text="@string/save"
-		android:layout_gravity="center_vertical"></Button>
+			<TextView
+				android:text="\nSet server port:"
+				android:textSize="20sp"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/textView2" />
 
+			<EditText
+				android:id="@+id/porttext"
+				android:singleLine="true"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content" />
+
+			<TextView
+				android:text=""
+				android:textSize="20sp"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/textView3" />
+
+			<Button
+				android:layout_width="wrap_content"
+				android:id="@+id/button2"
+				android:layout_height="wrap_content"
+				android:textSize="22sp"
+				android:text="@string/save"
+				android:layout_gravity="center_vertical"></Button>
+
+		</LinearLayout>
+	</ScrollView>
 </LinearLayout>

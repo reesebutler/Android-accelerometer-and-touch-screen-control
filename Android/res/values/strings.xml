@@ -8,4 +8,5 @@
     <string name="connect">Disconnect</string>
     <string name="freeze">Freeze Output</string>
     <string name="quit">Quit</string>
+    <string name="about">About</string>
 </resources>

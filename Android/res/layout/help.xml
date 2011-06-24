@@ -1,13 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent">
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
 
-	<TextView
+	<ScrollView
+		android:id="@+id/scroll"
 		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:textSize="20sp"
-		android:text="Pan around by using the touch screen. Pitch, yaw, and roll can be controlled by changing the Android device's orientation. Choose 'Calibrate' to calibrate the Android's sensors." />
+		android:layout_height="wrap_content">
+		<LinearLayout
+			android:orientation="vertical"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent">
 
+			<TextView
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:textSize="20sp"
+				android:text="- Pan around in the X and Y directions by using the touch screen.
+			\n\n- Change the Android device's pitch and roll to control pitch and yaw respectively.
+			\n\n- Press 'Calibrate' to calibrate the Android's orientation.
+			\n\n - Pressing 'Freeze Output' will temporarily stop sending data to the server until it is pressed again."
+				android:layout_weight="1" />
+
+			<TextView
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:textSize="20sp"
+				android:text="\n- Shown when not connected to server"
+				android:layout_weight="1"
+				android:drawableLeft="@drawable/red_icon" />
+
+			<TextView
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:textSize="20sp"
+				android:text="\n- Shown when connected to server but output has been frozen"
+				android:layout_weight="1"
+				android:drawableLeft="@drawable/yellow_icon" />
+
+			<TextView
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:textSize="20sp"
+				android:text="\n- Shown when connected to server and output is not frozen"
+				android:layout_weight="1"
+				android:drawableLeft="@drawable/green_icon" />
+
+		</LinearLayout>
+	</ScrollView>
 </LinearLayout>

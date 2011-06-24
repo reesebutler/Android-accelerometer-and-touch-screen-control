@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+
+	<ScrollView
+		android:id="@+id/scroll"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content">
+		<LinearLayout
+			android:orientation="vertical"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent">
+			<TextView
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:textSize="20sp"
+				android:text="- Type the server's IP address into the first box. This must be a valid IP address.
+					\n- Type the port number that the server is listening on into the second box.
+					\n- When you have entered both fields, press 'Connect' to connect to the server."
+				android:layout_weight="1" />
+
+		</LinearLayout>
+	</ScrollView>
+</LinearLayout>

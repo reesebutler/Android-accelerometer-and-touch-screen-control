@@ -1,12 +1,12 @@
 /** Reese Butler
- *  6/13/2011
+ *  6/24/2011
  */
 
 package com.lg.accel;
 
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.Sensor.TYPE_ORIENTATION;
-import static android.hardware.SensorManager.SENSOR_DELAY_UI;
+import static android.hardware.SensorManager.*;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -23,6 +23,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.Menu;
@@ -107,7 +108,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		director = (SensorManager) getSystemService(SENSOR_SERVICE);
 		wifi = (WifiManager) getSystemService(WIFI_SERVICE);
 		boolean accelExists = director.registerListener(this, director.getDefaultSensor(TYPE_ACCELEROMETER), SENSOR_DELAY_UI);
-		boolean orientExists = director.registerListener(this, director.getDefaultSensor(TYPE_ORIENTATION), SENSOR_DELAY_UI);
+		boolean orientExists = director.registerListener(this, director.getDefaultSensor(TYPE_ORIENTATION), SENSOR_DELAY_GAME);
 		
 		if(!connected)
 		{
@@ -154,7 +155,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		{
 			if(wifi.isWifiEnabled())
 			{
-		        try {
+		        try { Log.v("LOOK", "port: " + port);
 		        	clientSocket = new Socket(IP, Integer.parseInt(port));
 		        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
 		        	inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -163,6 +164,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		        	Toast.makeText(this, "Connected successfully", Toast.LENGTH_SHORT).show();
 		        	connectivity_icon.setImageResource(R.drawable.green_icon);
 		        } catch (Exception e){ 
+		        	e.printStackTrace();
 		        	Toast.makeText(this, "Failed to connect to server", Toast.LENGTH_LONG).show();
 		        	connected = false;
 		        	shouldBeConnected = false;
@@ -222,6 +224,12 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		{
 			quit();
 		}
+			return true;
+		case R.id.about:
+		{
+			Intent i = new Intent(AccelTest.this, About.class);
+			startActivity(i);
+		}
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -265,8 +273,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 				yFinal = y2 - dy;
 				zFinal = z2 - dz;
 				
-				sendValues();
-				checkConnection();
+				if(connected)
+				{
+					sendValues();
+					checkConnection();
+				}
 			} /*
 			if(event.sensor.getType() == TYPE_ACCELEROMETER)
 			{
@@ -312,7 +323,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		else if(v == downButton && me.getAction() == MotionEvent.ACTION_DOWN)
 			panZ --;
 		
-		if(v == upButton || v == downButton && me.getAction() == MotionEvent.ACTION_DOWN)
+		if(v == upButton || v == downButton && me.getAction() == MotionEvent.ACTION_DOWN && connected)
 		{
 			sendValues();
 			checkConnection();
@@ -346,9 +357,12 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		distanceX = newX;
 		distanceY = newY;
 		
-		sendValues();
-		checkConnection();
-		
+		if(connected)
+		{
+			sendValues();
+			checkConnection();
+		}
+			
 		return true;
 	}
 	
@@ -417,7 +431,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	private void sendValues()
 	{
 		if(connected && !frozen)
-			outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); 
+			outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); //roll, pitch, roll, x, y, z
 		else if(connected && frozen && firstTimeFrozen)
 		{
 			outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");

@@ -1,5 +1,5 @@
 /** Reese Butler
- *  6/9/2011
+ *  6/24/2011
  */
 
 package com.lg.accel;
@@ -123,7 +123,13 @@ public class Configure extends Activity implements OnClickListener
 		switch (item.getItemId()){
 		case R.id.help:
 		{
-			Intent i = new Intent(Configure.this, Help.class);
+			Intent i = new Intent(Configure.this, HelpConfigure.class);
+			startActivity(i);
+			return true;
+		}
+		case R.id.about:
+		{
+			Intent i = new Intent(Configure.this, About.class);
 			startActivity(i);
 			return true;
 		}

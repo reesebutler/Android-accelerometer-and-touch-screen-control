@@ -14,6 +14,10 @@
 		android:icon="@drawable/help"
 		android:title="@string/help" />
 	<item
+		android:id="@+id/about"
+		android:icon="@drawable/about"
+		android:title="@string/about" />
+	<item
 		android:id="@+id/quit"
 		android:icon="@drawable/quit"
 		android:title="@string/quit" />

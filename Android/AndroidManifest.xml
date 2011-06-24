@@ -28,13 +28,16 @@
 		</activity>
 
 		<activity
-			android:name=".Calibrate"
-			android:screenOrientation="portrait"></activity>
+			android:name=".HelpConfigure"
+			android:configChanges="keyboardHidden|orientation"></activity>
 		<activity
 			android:name=".Help"
-			android:screenOrientation="portrait"></activity>
+			android:configChanges="keyboardHidden|orientation"></activity>
 		<activity
 			android:name=".Configure"></activity>
+		<activity
+			android:name=".About"
+			android:configChanges="keyboardHidden|orientation"></activity>
 
 
 	</application>

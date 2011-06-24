@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+
+	<ScrollView
+		android:id="@+id/scroll"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content">
+		<LinearLayout
+			android:orientation="vertical"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent">
+			<TextView
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:textSize="20sp"
+				android:id="@+id/about"
+				android:text="Android Controller (for Google Earth)
+					\n\nWritten by Reese Butler
+					\n\nFor more information and faq's: https://raw.github.com/reesebutler/Android-accelerometer-and-touch-screen-control/master/README"
+				android:layout_weight="1" />
+
+		</LinearLayout>
+	</ScrollView>
+</LinearLayout>
