@@ -38,6 +38,9 @@
 		<activity
 			android:name=".About"
 			android:configChanges="keyboardHidden|orientation"></activity>
+		<activity
+			android:name=".Settings"
+			android:configChanges="keyboardHidden|orientation"></activity>
 
 
 	</application>

@@ -3,10 +3,13 @@
     <string name="app_name">Android Controller</string>
     <string name="cal">Calibrate</string>
     <string name="help">Help</string>
-    <string name="configure">Configure/Connect</string>
+    <string name="configure">Connect</string>
     <string name="save">Connect</string>
     <string name="connect">Disconnect</string>
     <string name="freeze">Freeze Output</string>
     <string name="quit">Quit</string>
     <string name="about">About</string>
+    <string name="settings">Configure</string>
+    <string name="cancel">Cancel</string>
+    <string name="save_settings">Save</string>
 </resources>

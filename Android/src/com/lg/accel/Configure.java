@@ -46,7 +46,7 @@ public class Configure extends Activity implements OnClickListener
 		
 		//Attempts to retrieve any previously stored IP address
 		try{
-			in = openFileInput("settings.dat");
+			in = openFileInput("connection.dat");
 			inReader = new InputStreamReader(in);
 			inReader.read(inputBuffer);
 			s = new String(inputBuffer);
@@ -181,7 +181,7 @@ public class Configure extends Activity implements OnClickListener
 			if(ipCorrect && portCorrect)
 			{
 				try {
-					out = openFileOutput("settings.dat", MODE_PRIVATE);
+					out = openFileOutput("connection.dat", MODE_PRIVATE);
 					outWriter = new OutputStreamWriter(out);
 					outWriter.write(s + "," + s2);
 					outWriter.flush();

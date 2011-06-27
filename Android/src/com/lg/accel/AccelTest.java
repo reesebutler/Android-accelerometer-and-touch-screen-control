@@ -1,5 +1,5 @@
 /** Reese Butler
- *  6/24/2011
+ *  6/27/2011
  */
 
 package com.lg.accel;
@@ -24,8 +24,6 @@ import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.GestureDetector;
-import android.view.GestureDetector.OnGestureListener;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -41,10 +39,10 @@ import android.widget.Toast;
 
 /** Implements SensorEventListener for the accelerometer/orientation values
 * Implements OnGestureListener for the scrolling (touch-screen) values */
-public class AccelTest extends Activity implements SensorEventListener, OnGestureListener, OnClickListener, OnTouchListener
+public class AccelTest extends Activity implements SensorEventListener, OnClickListener, OnTouchListener
 {
 	private SensorManager director;
-	private GestureDetector detector;
+	//private GestureDetector detector;
 	
 	@SuppressWarnings("unused")
 	private float x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0, xFinal, yFinal, zFinal, distanceX, distanceY, panZ = 0, roll = 0;
@@ -62,6 +60,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	private Button freezeButton, calibrateButton;
 	private ImageButton upButton, downButton;
 	private ImageView connectivity_icon;
+	
+	//For touch control
+	private long previousTime = 0, currentTime, diffTime;
+	private float previousX = 0, previousY = 0, currentX, currentY, diffX, diffY;
+	private boolean scrolling = false;
 	
     /** Called when the activity is first created. */
     @Override
@@ -85,9 +88,6 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
         calibrateButton.setOnClickListener(this);
         upButton.setOnTouchListener(this);
         downButton.setOnTouchListener(this);
-        
-        detector = new GestureDetector(this, this); //Initializes the GestureDetector (for touch-screen input)
-        detector.setIsLongpressEnabled(false);
     }
 
     /** Called when the application is paused (essentially any time that the user navigates away from the main activity) */
@@ -127,7 +127,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		
 		//Attempts to retrieve any previously stored IP address and port
 		try{
-			in = openFileInput("settings.dat");
+			in = openFileInput("connection.dat");
 			inReader = new InputStreamReader(in);
 			inReader.read(inputBuffer);
 			dataString = new String(inputBuffer);
@@ -207,28 +207,35 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 		{
 			Intent i = new Intent(AccelTest.this, Help.class);
 			startActivity(i);
-		}
 			return true;
+		}
 		case R.id.configure:
 		{
 			Intent i = new Intent(AccelTest.this, Configure.class);
 			startActivityForResult(i, SUB_ACTIVITY_REQUEST_CODE);
-		}
 			return true;
+		}
 		case R.id.connect: //Disconnects from the server 
 		{
 			disconnect(true);
-		}
 			return true;
+		}
 		case R.id.quit:
 		{
 			quit();
-		}
 			return true;
+		}
 		case R.id.about:
 		{
 			Intent i = new Intent(AccelTest.this, About.class);
 			startActivity(i);
+			return true;
+		}
+		case R.id.settings:
+		{
+			Intent i = new Intent(AccelTest.this, Settings.class);
+			startActivity(i);
+			return true;
 		}
 		default:
 			return super.onOptionsItemSelected(item);
@@ -299,14 +306,46 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 	
 	//a method of the View class which needs to be implemented for touch control to work
 	public boolean onTouchEvent(MotionEvent me)
-	{
+	{	
 		//Resets scroll values to zero when the user stops touching the screen
-		if(me.getAction() == MotionEvent.ACTION_UP)
-			distanceX = 0; distanceY = 0;
+		if(me.getAction() == MotionEvent.ACTION_UP || me.getAction() == MotionEvent.ACTION_DOWN)
+		{
+			distanceX = 0; distanceY = 0;	
+			scrolling = false;
+		}
+		
+		if(scrolling == false)
+		{
+			previousTime = me.getEventTime();
+			previousX = me.getRawX();
+			previousY = me.getRawY();
+			scrolling = true;
+		}
+		else if(scrolling == true)
+		{
+			currentTime = me.getEventTime();
+			currentX = me.getRawX();
+			currentY = me.getRawY();
+			diffTime = currentTime - previousTime;
+			diffX = currentX - previousX;
+			diffY = currentY - previousY;
 			
-		//Passes knowledge of the MotionEvent to the detector, which in turn allows the other OnGestureListener
-		//    methods to be called
-		return detector.onTouchEvent(me); 
+			distanceX = diffX / (float) diffTime * 20;
+			distanceY = diffY / (float) diffTime * 20;
+			Log.v("LOOK", "" + distanceX);
+			
+			previousTime = currentTime;
+			previousX = currentX;
+			previousY = currentY;
+		}
+		
+		if(connected)
+		{
+			sendValues();
+			checkConnection();
+		}
+		
+		return true;
 	}
 	
 	/** Implemented to allow buttons to be pressed without a complete "onClick" call */
@@ -329,40 +368,6 @@ public class AccelTest extends Activity implements SensorEventListener, OnGestur
 			checkConnection();
 		}
 		
-		return true;
-	}
-	
-	public boolean onDown(MotionEvent e)
-	{
-		return true;
-	}
-	
-	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY)
-	{
-		return true;
-	}
-	
-	public void onLongPress(MotionEvent e){}
-	
-	public void onShowPress(MotionEvent e){}
-	
-	public boolean onSingleTapUp(MotionEvent e)
-	{
-		return true;
-	}
-	
-	/** Called when a scroll motion is made on the touch-screen */
-	public boolean onScroll(MotionEvent e1, MotionEvent e2, float newX, float newY)
-	{
-		distanceX = newX;
-		distanceY = newY;
-		
-		if(connected)
-		{
-			sendValues();
-			checkConnection();
-		}
-			
 		return true;
 	}
 	
