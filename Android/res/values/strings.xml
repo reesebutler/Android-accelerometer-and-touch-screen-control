@@ -12,4 +12,5 @@
     <string name="settings">Configure</string>
     <string name="cancel">Cancel</string>
     <string name="save_settings">Save</string>
+    <string name="reset">Reset to Defaults</string>
 </resources>

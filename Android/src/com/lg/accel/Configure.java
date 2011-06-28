@@ -139,6 +139,12 @@ public class Configure extends Activity implements OnClickListener
 			finish();
 			return true;
 		}
+		case R.id.settings:
+		{
+			Intent i = new Intent(Configure.this, Settings.class);
+			startActivity(i);
+			return true;
+		}
 		default:
 			return super.onOptionsItemSelected(item);
 		}

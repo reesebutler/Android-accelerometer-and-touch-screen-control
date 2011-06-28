@@ -4,18 +4,21 @@ make the buttons appear as though pressed
 make sure things scale well in different resolutions
 restrict scroll event to some section in the middle of the screen
 add box/circle/joystick-looking-thing in middle to represent "touchable" area
-add sensitivity setting(s)
 add option to slow down or speed up rate at which the app sends output (not sure if this is really needed)
-add seekbar's (for setting selection)
 
 (DONE) update help screen/make it context sensitive (based on which screen the user is in)
 (DONE) change speed that new orientation data is sent to the server
 (DONE) add "About" page
 (DONE) make help screens scroll
 (DONE) Smoothed touch-screen control
+(DONE) add sensitivity setting(s)
+(DONE) add seekbar's (for setting selection)
+
 
 
 SERVER:
 
-normalize values for easier use
+do "fuzz" testing
 add a better way of stopping the server than pressing ctrl+c?
+
+(DONE) normalize values for easier use

@@ -1,5 +1,5 @@
 /** Reese Butler
- *  6/27/2011
+ *  6/28/2011
  */
 
 package com.lg.accel;
@@ -60,6 +60,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	private Button freezeButton, calibrateButton;
 	private ImageButton upButton, downButton;
 	private ImageView connectivity_icon;
+	private int panSens = 49, pitchSens = 49, rollSens = 49, zoomSpeed = 49, orientDisable = 0, invertX = 0, invertY = 0, invertPitch = 0, invertRoll = 0;
 	
 	//For touch control
 	private long previousTime = 0, currentTime, diffTime;
@@ -138,6 +139,39 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			e.printStackTrace();
 			Intent i = new Intent(AccelTest.this, Configure.class);
 			startActivityForResult(i, SUB_ACTIVITY_REQUEST_CODE);
+		} finally {
+			try {
+				if(inReader != null && in != null)
+				{
+					inReader.close();
+					in.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		//Attempts to retrieve any other previously stored settings
+		try{
+			in = openFileInput("settings.dat");
+			inReader = new InputStreamReader(in);
+			inReader.read(inputBuffer);
+			dataString = new String(inputBuffer);
+			dataString = dataString.trim();
+			
+			//Parses values for the settings
+			panSens = Integer.parseInt(dataString.substring(0, 2));
+			pitchSens = Integer.parseInt(dataString.substring(2, 4));
+			rollSens = Integer.parseInt(dataString.substring(4, 6));
+			zoomSpeed = Integer.parseInt(dataString.substring(6, 8));
+			orientDisable = Integer.parseInt(dataString.substring(8, 9));
+			invertX = Integer.parseInt(dataString.substring(9, 10));
+			invertY = Integer.parseInt(dataString.substring(10, 11));
+			invertPitch = Integer.parseInt(dataString.substring(11, 12));
+			invertRoll = Integer.parseInt(dataString.substring(12, 13));
+		} catch (Exception e) {
+			e.printStackTrace();
+			
 		} finally {
 			try {
 				if(inReader != null && in != null)
@@ -276,9 +310,24 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 				z2 = event.values[2];
 				
 				//The calibrated values which have been adjusted by the appropriate offset
-				xFinal = x2 - dx;
-				yFinal = y2 - dy;
-				zFinal = z2 - dz;
+				if(orientDisable == 0)
+				{
+				xFinal = (x2 - dx);
+				if(invertPitch == 0)
+					yFinal = (y2 - dy) * pitchSens / 20;
+				else
+					yFinal = (y2 - dy) * pitchSens / -20;
+				if(invertRoll == 0)
+					zFinal = (z2 - dz) * rollSens / 20;
+				else
+					zFinal = (z2 - dz) * rollSens / -20;
+				}
+				else
+				{
+					xFinal = 0;
+					yFinal = 0;
+					zFinal = 0;
+				}
 				
 				if(connected)
 				{
@@ -330,9 +379,14 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			diffX = currentX - previousX;
 			diffY = currentY - previousY;
 			
-			distanceX = diffX / (float) diffTime * 20;
-			distanceY = diffY / (float) diffTime * 20;
-			Log.v("LOOK", "" + distanceX);
+			if(invertX == 0)
+				distanceX = diffX / (float) diffTime * panSens;
+			else
+				distanceX = diffX / (float) diffTime * -panSens;
+			if(invertY == 0)
+				distanceY = diffY / (float) diffTime * panSens;
+			else
+				distanceY = diffY / (float) diffTime * -panSens;
 			
 			previousTime = currentTime;
 			previousX = currentX;
@@ -358,9 +412,9 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		}
 		
 		if(v == upButton && me.getAction() == MotionEvent.ACTION_DOWN)
-			panZ ++;
+			panZ = zoomSpeed;
 		else if(v == downButton && me.getAction() == MotionEvent.ACTION_DOWN)
-			panZ --;
+			panZ = zoomSpeed * -1;
 		
 		if(v == upButton || v == downButton && me.getAction() == MotionEvent.ACTION_DOWN && connected)
 		{
@@ -412,7 +466,13 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		shouldBeConnected = false;
 		
 		if(connected)
-		{
+		{	
+			if(intended == true)
+			{
+				outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
+				checkConnection();
+			}
+			
 			outToServer.close();
 			
 			try {

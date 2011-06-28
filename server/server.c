@@ -21,7 +21,6 @@ struct sockaddr_in serv_addr, cli_addr; //Store the server and client addresses
 float x, y, z, pitch, yaw, roll = 0.0; //Store the input values
 int newx, newy, newz, newpitch, newyaw, newroll = 0;
 int fifo, vflag = 0;
-int counter = 0;
 char *pipe_name = "event12"; //The name of the pipe
 
 //Handles error messages
@@ -54,15 +53,15 @@ void print_verbose()
 float normalize_value(int axis, float value)
 {
 	if(axis == 0 || axis == 1)
-		return value * -15;
+		return value * -12;
 	else if(axis == 2)
-		return value * 40;
+		return value * 3;
 	else if(axis == 3 && value != 0)
 		return value * -4;
 	else if(axis == 4)
-		return value * 4;
+		return value * -4;
 	else if(axis == 5)
-		return value * 80;
+		return value * -4;
 	return 0;
 }
 
@@ -120,7 +119,6 @@ void start_server(void)
 					{
 						printf("connected successfully!\n");
 						first = 0;
-						counter = 0;
 					}
 					sscanf(buffer, "%f,%f,%f,%f,%f,%f", &yaw, &pitch, &roll, &x, &y, &z);
 					

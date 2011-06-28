@@ -13,21 +13,111 @@
 			android:orientation="vertical"
 			android:layout_width="fill_parent"
 			android:layout_height="fill_parent">
-			
+
 			<TextView
-				android:text="Set server (master) IP:"
+				android:text="Set panning sensitivity:"
 				android:textSize="20sp"
 				android:layout_width="fill_parent"
 				android:layout_height="wrap_content"
-				android:id="@+id/textView1" />
+				android:id="@+id/text1" />
+			<SeekBar
+				android:id="@+id/seek1"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:max="99"
+				android:progress="49" />
+
+			<TextView
+				android:text="Set pitch sensitivity:"
+				android:textSize="20sp"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/text2" />
+			<SeekBar
+				android:id="@+id/seek2"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:max="99"
+				android:progress="49" />
+
+			<TextView
+				android:text="Set roll sensitivity:"
+				android:textSize="20sp"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/text3" />
+			<SeekBar
+				android:id="@+id/seek3"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:max="99"
+				android:progress="49" />
+
+			<TextView
+				android:text="Set zoom sensitivity:"
+				android:textSize="20sp"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/text4" />
+			<SeekBar
+				android:id="@+id/seek4"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:max="99"
+				android:progress="49" />
+
+			<CheckBox
+				android:id="@+id/box1"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Panning only"
+				android:textSize="20sp" />
+			<CheckBox
+				android:id="@+id/box2"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Invert X panning direction"
+				android:textSize="20sp" />
+			<CheckBox
+				android:id="@+id/box3"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Invert Y panning direction"
+				android:textSize="20sp" />
+			<CheckBox
+				android:id="@+id/box4"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Invert pitch"
+				android:textSize="20sp" />
+			<CheckBox
+				android:id="@+id/box5"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="Invert roll"
+				android:textSize="20sp" />
+
+			<TextView
+				android:text=""
+				android:textSize="20sp"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/space_filler" />
 
 			<Button
 				android:layout_width="wrap_content"
 				android:id="@+id/button2"
 				android:layout_height="wrap_content"
-				android:textSize="22sp"
+				android:textSize="24sp"
 				android:text="@string/save_settings"
 				android:layout_gravity="center_vertical"></Button>
+				
+			<TextView
+				android:text=""
+				android:textSize="20sp"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/space_filler" />
 				
 			<Button
 				android:layout_width="wrap_content"
@@ -36,6 +126,20 @@
 				android:textSize="22sp"
 				android:text="@string/cancel"
 				android:layout_gravity="center_vertical"></Button>
+			<Button
+				android:layout_width="wrap_content"
+				android:id="@+id/button4"
+				android:layout_height="wrap_content"
+				android:textSize="22sp"
+				android:text="@string/reset"
+				android:layout_gravity="center_vertical"></Button>
+
+			<TextView
+				android:text=""
+				android:textSize="20sp"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/space_filler" />
 
 		</LinearLayout>
 	</ScrollView>
