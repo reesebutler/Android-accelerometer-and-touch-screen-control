@@ -12,7 +12,6 @@ import java.io.OutputStreamWriter;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -120,11 +119,11 @@ public class Settings extends Activity implements OnClickListener, OnSeekBarChan
 		text4.setText("Set zoom sensitivity: " + (Integer.parseInt(zoomSpeed) + 1) + "%");
 		
 		/** Initializes the seek bars to the previous values */
-		seek1.setProgress(Integer.parseInt(panSens) + 1);
-		seek2.setProgress(Integer.parseInt(pitchSens) + 1);
-		seek3.setProgress(Integer.parseInt(rollSens) + 1);
-		seek4.setProgress(Integer.parseInt(zoomSpeed) + 1);
-		Log.d("LOOK", "invertRoll: " + invertRoll);
+		seek1.setProgress(Integer.parseInt(panSens));
+		seek2.setProgress(Integer.parseInt(pitchSens));
+		seek3.setProgress(Integer.parseInt(rollSens));
+		seek4.setProgress(Integer.parseInt(zoomSpeed));
+
 		/** Checks the checkboxes if necessary */
 		if(orientDisable.equals("1"))
 			box1.setChecked(true);

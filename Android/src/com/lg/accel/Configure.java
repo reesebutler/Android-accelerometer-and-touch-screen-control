@@ -15,6 +15,7 @@ import java.net.UnknownHostException;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,13 +31,14 @@ public class Configure extends Activity implements OnClickListener
 {
 	EditText ip = null;
 	EditText port = null;
+	EditText enterKey = null;
 	Button save = null;
 	FileOutputStream out = null;
 	OutputStreamWriter outWriter = null;
 	FileInputStream in = null;
 	InputStreamReader inReader = null;
 	char[] inputBuffer = new char[255];
-	String s = "", s2 = "";
+	String s = "", s2 = "", s3 = "";
 	boolean finished = false;
 	
 	protected void onCreate(Bundle savedInstanceState) 
@@ -51,7 +53,8 @@ public class Configure extends Activity implements OnClickListener
 			inReader.read(inputBuffer);
 			s = new String(inputBuffer);
 			s = s.trim();
-			s2 = s.substring(s.indexOf(",") + 1); //Sets the port string
+			s3 = s.substring(s.lastIndexOf(",") + 1);
+			s2 = s.substring(s.indexOf(",") + 1, s.lastIndexOf(",")); //Sets the port string
 			s = s.substring(0, s.indexOf(",")); //Sets the IP string
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -74,6 +77,8 @@ public class Configure extends Activity implements OnClickListener
 		ip.setText(s);
 		port = (EditText) findViewById(R.id.porttext);
 		port.setText(s2);
+		enterKey = (EditText) findViewById(R.id.keytext);
+		enterKey.setText(s3);
 		save = (Button) findViewById(R.id.button2);
 		save.setOnClickListener(this);
 		
@@ -101,6 +106,19 @@ public class Configure extends Activity implements OnClickListener
 		    	return false;
 		    }
 		});
+		
+		enterKey.setOnKeyListener(new OnKeyListener()
+		{
+		    public boolean onKey(View v, int keyCode, KeyEvent event) 
+		    {
+		    	if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER))
+		    	{
+		    		return true;
+		    	}
+		    	return false;
+		    }
+		});
+
 
 	}
 	
@@ -184,14 +202,26 @@ public class Configure extends Activity implements OnClickListener
 				}
 			}
 			
+			if(!enterKey.getText().toString().equals(""))
+			{
+				try {
+					tmpInt = Integer.parseInt(enterKey.getText().toString());
+					s3 = Integer.toString(tmpInt);
+				} catch (NumberFormatException e) {
+					e.printStackTrace();
+					Toast.makeText(this, "Not a valid passcode", Toast.LENGTH_SHORT).show();
+				}
+			}
+			
 			if(ipCorrect && portCorrect)
 			{
 				try {
 					out = openFileOutput("connection.dat", MODE_PRIVATE);
 					outWriter = new OutputStreamWriter(out);
-					outWriter.write(s + "," + s2);
+					outWriter.write(s + "," + s2 + "," + s3);
 					outWriter.flush();
 					setResult(RESULT_OK);
+					Log.d("LOOK", "key: " + s3);
 					finish();
 				} catch (Exception e) {
 					e.printStackTrace();

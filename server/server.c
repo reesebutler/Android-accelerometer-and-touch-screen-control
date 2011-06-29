@@ -19,6 +19,7 @@ int sockfd, newsockfd, portnumber = 4444, client_length, n;
 char buffer[256]; //The character buffer used to grab the inputs
 struct sockaddr_in serv_addr, cli_addr; //Store the server and client addresses
 float x, y, z, pitch, yaw, roll = 0.0; //Store the input values
+int passcode = 0, key = 0;
 int newx, newy, newz, newpitch, newyaw, newroll = 0;
 int fifo, vflag = 0;
 char *pipe_name = "event12"; //The name of the pipe
@@ -120,33 +121,36 @@ void start_server(void)
 						printf("connected successfully!\n");
 						first = 0;
 					}
-					sscanf(buffer, "%f,%f,%f,%f,%f,%f", &yaw, &pitch, &roll, &x, &y, &z);
+					sscanf(buffer, "%f,%f,%f,%f,%f,%f,%d", &yaw, &pitch, &roll, &x, &y, &z, &passcode);
 					
-					newx = (int)x;
-					newy = (int)y;
-					newz = (int)z;
-					newpitch = (int)pitch;
-					newyaw = (int)yaw;
-					newroll = (int)roll;
+					if(passcode == key)
+					{
+						newx = (int)x;
+						newy = (int)y;
+						newz = (int)z;
+						newpitch = (int)pitch;
+						newyaw = (int)yaw;
+						newroll = (int)roll;
 					
-					x = normalize_value(0, x);
-					y = normalize_value(1, y);
-					z = normalize_value(2, z);
-					pitch = normalize_value(3, pitch);
-					roll = normalize_value(4, roll);
-					yaw = normalize_value(5, yaw);
+						x = normalize_value(0, x);
+						y = normalize_value(1, y);
+						z = normalize_value(2, z);
+						pitch = normalize_value(3, pitch);
+						roll = normalize_value(4, roll);
+						yaw = normalize_value(5, yaw);
 					
-					write_value(0, x); //x
-					write_value(1, y); //y
-					write_value(2, z); //z
-					write_value(3, pitch); //pitch
-					//write_value(4, yaw); //roll
-					write_value(5, roll); //yaw
+						write_value(0, x); //x
+						write_value(1, y); //y
+						write_value(2, z); //z
+						write_value(3, pitch); //pitch
+						//write_value(4, yaw); //roll
+						write_value(5, roll); //yaw
 					
-					if(vflag)
-						print_verbose();
+						if(vflag)
+							print_verbose();
 	
-					write(newsockfd,"I got your message\n",19);
+						write(newsockfd,"I got your message\n",19);
+					}
 				}
 			}
 		}
@@ -171,7 +175,7 @@ int main(int argc, char* argv[])
 	int c, hflag = 0;
 	
 	//Parses command-line arguments
-	while((c = getopt(argc, argv, "p:f:hv")) != -1)
+	while((c = getopt(argc, argv, "p:f:hvk:")) != -1)
 	{
 		switch(c)
 		{
@@ -187,13 +191,16 @@ int main(int argc, char* argv[])
 			case 'v':
 				vflag = 1;
 				break;
+			case 'k':
+				key = atoi(optarg);
+				break;
 		}
 	}
 	
 	//Prints the usage
 	if(hflag)
 	{
-		printf("Usage: %s [-p <port>] [-f <pipe_name>]\n\n", argv[0]);
+		printf("Usage: %s [-p <port>] [-f <pipe_name>] [-k <numeric key/passcode>]\n\n", argv[0]);
 		exit(0);
 	}
 	

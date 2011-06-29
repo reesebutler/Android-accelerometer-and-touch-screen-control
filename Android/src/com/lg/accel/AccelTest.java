@@ -6,7 +6,8 @@ package com.lg.accel;
 
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.Sensor.TYPE_ORIENTATION;
-import static android.hardware.SensorManager.*;
+import static android.hardware.SensorManager.SENSOR_DELAY_GAME;
+import static android.hardware.SensorManager.SENSOR_DELAY_UI;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -49,6 +50,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	private float dx = 0, dy = 0, dz = 0;
 	private static final int SUB_ACTIVITY_REQUEST_CODE = 100;
 	private static String IP = "192.168.1.100", port = "4444", dataString = "";
+	private int key = 0;
 	private PrintWriter outToServer;
 	private BufferedReader inFromServer;
 	private Socket clientSocket;
@@ -134,7 +136,8 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			dataString = new String(inputBuffer);
 			dataString = dataString.trim();
 			IP = dataString.substring(0, dataString.indexOf(","));
-			port = dataString.substring(dataString.indexOf(",") + 1);
+			port = dataString.substring(dataString.indexOf(",") + 1, dataString.lastIndexOf(","));
+			key = Integer.parseInt(dataString.substring(dataString.lastIndexOf(",")));
 		} catch (Exception e) {
 			e.printStackTrace();
 			Intent i = new Intent(AccelTest.this, Configure.class);
@@ -186,10 +189,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		
 		//Attempts to connect if the user pressed "connect" in the configure screen
 		if(shouldBeConnected && !connected)
-		{
+		{	Log.v("LOOK", "port: " + port);
+		Log.v("LOOK", "IP: " + IP);
 			if(wifi.isWifiEnabled())
 			{
-		        try { Log.v("LOOK", "port: " + port);
+		        try {
 		        	clientSocket = new Socket(IP, Integer.parseInt(port));
 		        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
 		        	inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -409,12 +413,20 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		{
 			panZ = 0;
 			roll = 0;
+			upButton.setImageResource(R.drawable.upz);
+			downButton.setImageResource(R.drawable.downz);
 		}
 		
 		if(v == upButton && me.getAction() == MotionEvent.ACTION_DOWN)
+		{
 			panZ = zoomSpeed;
+			upButton.setImageResource(R.drawable.upz_pressed);
+		}
 		else if(v == downButton && me.getAction() == MotionEvent.ACTION_DOWN)
+		{
 			panZ = zoomSpeed * -1;
+			downButton.setImageResource(R.drawable.downz_pressed);
+		}
 		
 		if(v == upButton || v == downButton && me.getAction() == MotionEvent.ACTION_DOWN && connected)
 		{
@@ -494,12 +506,12 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	
 	/** Sends the output of sensor values to the server */
 	private void sendValues()
-	{
+	{	
 		if(connected && !frozen)
-			outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ); //roll, pitch, roll, x, y, z
+			outToServer.println(roll + "," + yFinal + "," + zFinal + "," + distanceX + "," + distanceY + "," + panZ + "," + key); //roll, pitch, roll, x, y, z
 		else if(connected && frozen && firstTimeFrozen)
 		{
-			outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
+			outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0" + "," + key);
 			firstTimeFrozen = false;
 		}
 	}

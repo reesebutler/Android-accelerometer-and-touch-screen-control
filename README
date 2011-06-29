@@ -1,4 +1,4 @@
-This version of the application collects accelerometer, orientation, and touch screen data from an Android device's sensors. Currently this is compiled for Android API version 8 (Android system version 2.2).
+This version of the application collects orientation and touch screen data from an Android device's sensors. Requires Android version 1.5 or higher.
 
 FAQS:
 
@@ -12,4 +12,7 @@ Q: Where can I get the server application?
 A: The server is written for linux systems, and you can download it here: https://github.com/reesebutler/Android-accelerometer-and-touch-screen-control/tree/master/server
 
 Q: The server doesn't run, why? 
-A: Make sure that the file called "server" is executable. If it still does not work, try recompiling the server application. To do this, open a terminal window, navigate to the directory of the downloaded server files, and type "make server". 
+A: Make sure that the file called "server" is executable. If it still does not work, try recompiling the server application. To do this, open a terminal window, navigate to the directory of the downloaded server files, and type "make server".
+
+Q: It says I'm connected, why isn't Google Earth moving.
+A: Try turning the sensitivities up. If that doesn't work, make sure that you configured Google Earth to get its input from the correct pipe (the same pipe you must specify when starting the server).
