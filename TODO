@@ -11,6 +11,7 @@ make sure things scale well in different resolutions
 (DONE) add sensitivity setting(s)
 (DONE) add seekbar's (for setting selection)
 (DONE) make the buttons appear as though pressed
+(DONE) added optional passcode
 
 
 
@@ -19,3 +20,4 @@ SERVER:
 do "fuzz" testing
 
 (DONE) normalize values for easier use
+(DONE) added optional passcode

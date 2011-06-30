@@ -1,5 +1,5 @@
 /** Reese Butler
- *  6/24/2011
+ *  6/30/2011
  */
 
 package com.lg.accel;
@@ -15,7 +15,6 @@ import java.net.UnknownHostException;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,7 +36,7 @@ public class Configure extends Activity implements OnClickListener
 	OutputStreamWriter outWriter = null;
 	FileInputStream in = null;
 	InputStreamReader inReader = null;
-	char[] inputBuffer = new char[255];
+	char[] inputBuffer;
 	String s = "", s2 = "", s3 = "";
 	boolean finished = false;
 	
@@ -48,6 +47,7 @@ public class Configure extends Activity implements OnClickListener
 		
 		//Attempts to retrieve any previously stored IP address
 		try{
+			inputBuffer = new char[255];
 			in = openFileInput("connection.dat");
 			inReader = new InputStreamReader(in);
 			inReader.read(inputBuffer);
@@ -173,6 +173,7 @@ public class Configure extends Activity implements OnClickListener
 	{
 		boolean ipCorrect = false;
 		boolean portCorrect = false;
+		boolean keyCorrect = false;
 		int tmpInt = 0;
 		
 		if(v == save)
@@ -202,18 +203,19 @@ public class Configure extends Activity implements OnClickListener
 				}
 			}
 			
-			if(!enterKey.getText().toString().equals(""))
+			if(!(enterKey.getText().toString().equals("")))
 			{
 				try {
 					tmpInt = Integer.parseInt(enterKey.getText().toString());
 					s3 = Integer.toString(tmpInt);
+					keyCorrect = true;
 				} catch (NumberFormatException e) {
 					e.printStackTrace();
 					Toast.makeText(this, "Not a valid passcode", Toast.LENGTH_SHORT).show();
 				}
 			}
 			
-			if(ipCorrect && portCorrect)
+			if(ipCorrect && portCorrect && keyCorrect)
 			{
 				try {
 					out = openFileOutput("connection.dat", MODE_PRIVATE);
@@ -221,7 +223,6 @@ public class Configure extends Activity implements OnClickListener
 					outWriter.write(s + "," + s2 + "," + s3);
 					outWriter.flush();
 					setResult(RESULT_OK);
-					Log.d("LOOK", "key: " + s3);
 					finish();
 				} catch (Exception e) {
 					e.printStackTrace();

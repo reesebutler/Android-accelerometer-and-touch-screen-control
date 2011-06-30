@@ -14,5 +14,5 @@ A: The server is written for linux systems, and you can download it here: https:
 Q: The server doesn't run, why? 
 A: Make sure that the file called "server" is executable. If it still does not work, try recompiling the server application. To do this, open a terminal window, navigate to the directory of the downloaded server files, and type "make server".
 
-Q: It says I'm connected, why isn't Google Earth moving.
+Q: It says I'm connected, why isn't Google Earth moving?
 A: Try turning the sensitivities up. If that doesn't work, make sure that you configured Google Earth to get its input from the correct pipe (the same pipe you must specify when starting the server).

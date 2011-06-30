@@ -1,5 +1,5 @@
 /** Reese Butler
- *  6/28/2011
+ *  6/30/2011
  */
 
 package com.lg.accel;
@@ -57,7 +57,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	private WifiManager wifi;
 	private FileInputStream in = null;
 	private InputStreamReader inReader = null;
-	char[] inputBuffer = new char[255];
+	char[] inputBuffer;
 	private boolean connected = false, frozen = false, shouldBeConnected = false, firstTimeFrozen = false;
 	private Button freezeButton, calibrateButton;
 	private ImageButton upButton, downButton;
@@ -130,6 +130,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		
 		//Attempts to retrieve any previously stored IP address and port
 		try{
+			inputBuffer = new char[255];
 			in = openFileInput("connection.dat");
 			inReader = new InputStreamReader(in);
 			inReader.read(inputBuffer);
@@ -137,7 +138,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			dataString = dataString.trim();
 			IP = dataString.substring(0, dataString.indexOf(","));
 			port = dataString.substring(dataString.indexOf(",") + 1, dataString.lastIndexOf(","));
-			key = Integer.parseInt(dataString.substring(dataString.lastIndexOf(",")));
+			key = Integer.parseInt(dataString.substring(dataString.lastIndexOf(",") + 1));
 		} catch (Exception e) {
 			e.printStackTrace();
 			Intent i = new Intent(AccelTest.this, Configure.class);
@@ -189,8 +190,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		
 		//Attempts to connect if the user pressed "connect" in the configure screen
 		if(shouldBeConnected && !connected)
-		{	Log.v("LOOK", "port: " + port);
-		Log.v("LOOK", "IP: " + IP);
+		{	
 			if(wifi.isWifiEnabled())
 			{
 		        try {
@@ -396,7 +396,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			previousX = currentX;
 			previousY = currentY;
 		}
-		
+	
 		if(connected)
 		{
 			sendValues();
@@ -481,7 +481,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		{	
 			if(intended == true)
 			{
-				outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0");
+				outToServer.println("0.0,0.0,0.0,0.0,0.0,0.0" + "," + key);
 				checkConnection();
 			}
 			
@@ -531,6 +531,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			
 			if(tmpstr == null)
 				disconnect(false);
+			else if(tmpstr.equals("!code"))
+			{
+				Toast.makeText(this, "Wrong passcode entered", Toast.LENGTH_SHORT).show();
+				disconnect(false);
+			}
 		}
 	}
 }

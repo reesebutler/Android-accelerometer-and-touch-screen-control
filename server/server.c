@@ -19,7 +19,7 @@ int sockfd, newsockfd, portnumber = 4444, client_length, n;
 char buffer[256]; //The character buffer used to grab the inputs
 struct sockaddr_in serv_addr, cli_addr; //Store the server and client addresses
 float x, y, z, pitch, yaw, roll = 0.0; //Store the input values
-int passcode = 0, key = 0;
+int passcode, key = 0;
 int newx, newy, newz, newpitch, newyaw, newroll = 0;
 int fifo, vflag = 0;
 char *pipe_name = "event12"; //The name of the pipe
@@ -121,9 +121,9 @@ void start_server(void)
 						printf("connected successfully!\n");
 						first = 0;
 					}
-					sscanf(buffer, "%f,%f,%f,%f,%f,%f,%d", &yaw, &pitch, &roll, &x, &y, &z, &passcode);
+					sscanf(buffer, "%f,%f,%f,%f,%f,%f,%i", &yaw, &pitch, &roll, &x, &y, &z, &passcode);
 					
-					if(passcode == key)
+					if(passcode == key || key == 0)
 					{
 						newx = (int)x;
 						newy = (int)y;
@@ -150,6 +150,11 @@ void start_server(void)
 							print_verbose();
 	
 						write(newsockfd,"I got your message\n",19);
+					}
+					else
+					{
+						write(newsockfd,"!code\n",6); 
+						printf("Client attempted to connect with wrong passcode\n");
 					}
 				}
 			}

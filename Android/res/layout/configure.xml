@@ -13,7 +13,7 @@
 			android:orientation="vertical"
 			android:layout_width="fill_parent"
 			android:layout_height="fill_parent">
-			
+
 			<TextView
 				android:text="Set server (master) IP:"
 				android:textSize="20sp"
@@ -39,7 +39,7 @@
 				android:singleLine="true"
 				android:layout_width="fill_parent"
 				android:layout_height="wrap_content" />
-				
+
 			<TextView
 				android:text="\nEnter server passcode (if any):"
 				android:textSize="20sp"
@@ -51,7 +51,16 @@
 				android:id="@+id/keytext"
 				android:singleLine="true"
 				android:layout_width="fill_parent"
-				android:layout_height="wrap_content" />
+				android:layout_height="wrap_content"
+				android:numeric="integer"
+				android:password="true" />
+
+			<TextView
+				android:text=""
+				android:textSize="20sp"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/textView3" />
 
 			<TextView
 				android:text=""
