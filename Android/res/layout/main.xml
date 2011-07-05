@@ -8,13 +8,13 @@
 
 	<TableRow>
 		<Button
-			android:layout_gravity="center"
+			android:layout_gravity="left"
 			android:text="@string/cal"
 			android:id="@+id/calibrate"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_weight="1"
-			android:textSize="20sp">
+			android:textSize="22sp">
 		</Button>
 
 		<ImageView
@@ -29,17 +29,8 @@
 		<TextView
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			android:id="@+id/placeholder1"
-			android:textSize="60sp" />
-
-	</TableRow>
-
-	<TableRow>
-		<TextView
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
 			android:id="@+id/placdeholder2"
-			android:textSize="80sp" />
+			android:textSize="140sp" />
 
 	</TableRow>
 
@@ -74,15 +65,17 @@
 	<TableRow
 		android:id="@+id/tableRow2"
 		android:layout_width="wrap_content"
-		android:layout_height="wrap_content">
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:gravity="center">
 		<Button
-			android:layout_gravity="center"
 			android:text="@string/freeze"
 			android:id="@+id/freeze"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_weight="1"
-			android:textSize="20sp">
+			android:layout_weight="0"
+			android:textSize="20sp"
+			android:layout_gravity="bottom">
 		</Button>
 	</TableRow>
 

@@ -1,5 +1,5 @@
 /** Reese Butler
- *  6/30/2011
+ *  7/5/2011
  */
 
 package com.lg.accel;
@@ -203,16 +203,21 @@ public class Configure extends Activity implements OnClickListener
 				}
 			}
 			
-			if(!(enterKey.getText().toString().equals("")))
-			{
-				try {
+			try {
+				if(!(enterKey.getText().toString().equals("")))
+				{
 					tmpInt = Integer.parseInt(enterKey.getText().toString());
 					s3 = Integer.toString(tmpInt);
 					keyCorrect = true;
-				} catch (NumberFormatException e) {
-					e.printStackTrace();
-					Toast.makeText(this, "Not a valid passcode", Toast.LENGTH_SHORT).show();
 				}
+				else
+				{
+					s3 = "";
+					keyCorrect = true;
+				}
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+				Toast.makeText(this, "Not a valid passcode", Toast.LENGTH_SHORT).show();
 			}
 			
 			if(ipCorrect && portCorrect && keyCorrect)

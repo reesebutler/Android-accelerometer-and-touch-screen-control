@@ -1,5 +1,5 @@
 /** Reese Butler
- *  6/30/2011
+ *  7/5/2011
  */
 
 package com.lg.accel;
@@ -24,7 +24,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -138,7 +137,12 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			dataString = dataString.trim();
 			IP = dataString.substring(0, dataString.indexOf(","));
 			port = dataString.substring(dataString.indexOf(",") + 1, dataString.lastIndexOf(","));
-			key = Integer.parseInt(dataString.substring(dataString.lastIndexOf(",") + 1));
+			
+			try {
+				key = Integer.parseInt(dataString.substring(dataString.lastIndexOf(",") + 1));
+			} catch (NumberFormatException e) {
+				key = 0;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			Intent i = new Intent(AccelTest.this, Configure.class);
@@ -428,10 +432,13 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			downButton.setImageResource(R.drawable.downz_pressed);
 		}
 		
-		if(v == upButton || v == downButton && me.getAction() == MotionEvent.ACTION_DOWN && connected)
+		if(v == upButton || v == downButton && me.getAction() == MotionEvent.ACTION_DOWN)
 		{
-			sendValues();
-			checkConnection();
+			if(connected)
+			{
+				sendValues();
+				checkConnection();
+			}
 		}
 		
 		return true;
