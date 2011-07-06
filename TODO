@@ -17,7 +17,8 @@ make sure things scale well in different resolutions
 
 SERVER:
 
-do "fuzz" testing
+
 
 (DONE) normalize values for easier use
 (DONE) added optional passcode
+(DONE) do fuzz testing

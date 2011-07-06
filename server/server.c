@@ -121,7 +121,14 @@ void start_server(void)
 						printf("connected successfully!\n");
 						first = 0;
 					}
-					sscanf(buffer, "%f,%f,%f,%f,%f,%f,%i", &yaw, &pitch, &roll, &x, &y, &z, &passcode);
+					
+					if(sscanf(buffer, "%f,%f,%f,%f,%f,%f,%i", &yaw, &pitch, &roll, &x, &y, &z, &passcode) != 7)
+					{
+						printf("connection lost\n");
+						printf("waiting for client connection...\n");
+						first = 1;
+						exit(0);
+					}
 					
 					if(passcode == key || key == 0)
 					{
