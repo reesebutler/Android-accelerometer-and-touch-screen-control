@@ -22,7 +22,7 @@ float x, y, z, pitch, yaw, roll = 0.0; //Store the input values
 int passcode, key = 0;
 int newx, newy, newz, newpitch, newyaw, newroll = 0;
 int fifo, vflag = 0;
-char *pipe_name = "event12"; //The name of the pipe
+char *pipe_name = "/dev/input/spacenavigator"; //The name of the pipe
 
 //Handles error messages
 void error(char *msg)
@@ -87,7 +87,7 @@ void start_server(void)
 	listen(sockfd, 5);
 	
 	client_length = sizeof(cli_addr);
-	printf("waiting for client connection...\n");
+	printf("waiting for client TCP connection...\n");
 	
 	while(1)
 	{	
@@ -110,7 +110,7 @@ void start_server(void)
 				if(n <= 0) //If the read fails
 				{
 					printf("connection lost\n");
-					printf("waiting for client connection...\n");
+					printf("waiting for client TCP connection...\n");
 					first = 1;
 					exit(0);
 				}
@@ -125,7 +125,7 @@ void start_server(void)
 					if(sscanf(buffer, "%f,%f,%f,%f,%f,%f,%i", &yaw, &pitch, &roll, &x, &y, &z, &passcode) != 7)
 					{
 						printf("connection lost\n");
-						printf("waiting for client connection...\n");
+						printf("waiting for client TCP connection...\n");
 						first = 1;
 						exit(0);
 					}
@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
 	//Prints the usage
 	if(hflag)
 	{
-		printf("Usage: %s [-p <port>] [-f <pipe_name>] [-k <numeric key/passcode>]\n\n", argv[0]);
+		printf("Usage: %s [-v] [-p <port>] [-f <pipe_name>] [-k <numeric key/passcode>]\n\n", argv[0]);
 		exit(0);
 	}
 	
@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
 	fifo = open(pipe_name, O_WRONLY); //Opens the named pipe
 	
 	if(fifo < 0)
-		error("ERROR opening pipe");
+		error("ERROR opening pipe, try specifying path with -f option");
 
 	signal(SIGINT, quit); //Handles process interruption
 	start_server(); //Begins the server process which waits for connections
