@@ -1,0 +1,16 @@
+This simple process binds to a TCP socket and accepts connections
+from the Android app.  Once connected, it passes the motions through
+a named pipe to Google Earth on the same system.
+
+You'll need to create a named pipe, usually with the `mkfifo` tool,
+and make sure this server process has permission to read and write.
+
+To point Google Earth at the pipe, change the line 
+"SpaceNavigator/device = /dev/input/spacenavigator" 
+in the drivers.ini file to point to the named pipe that you created.
+To point the server to the correct pipe, use the -f switch.
+
+Use the "-h" option to see usage.
+
+See this reference about InputEvent synthesis:
+https://code.google.com/p/liquid-galaxy/wiki/InputEvent
