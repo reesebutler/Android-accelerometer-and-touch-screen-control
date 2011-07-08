@@ -1,7 +1,8 @@
 
 ANDROID: 
 
-make sure things scale well in different resolutions
+make sure components scale well in different resolutions
+stop the app from hanging when it fails in attempting to connect to the server
 
 (DONE) update help screen/make it context sensitive (based on which screen the user is in)
 (DONE) change speed that new orientation data is sent to the server
@@ -12,6 +13,8 @@ make sure things scale well in different resolutions
 (DONE) add seekbar's (for setting selection)
 (DONE) make the buttons appear as though pressed
 (DONE) added optional passcode
+(DONE) make the text on the freeze button change from "freeze output" to "unfreeze output"
+(DONE) make it easier to reconnect to the server
 
 
 

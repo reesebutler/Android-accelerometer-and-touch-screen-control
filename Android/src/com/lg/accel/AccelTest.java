@@ -1,5 +1,5 @@
 /** Reese Butler
- *  7/5/2011
+ *  7/8/2011
  */
 
 package com.lg.accel;
@@ -62,6 +62,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	private ImageButton upButton, downButton;
 	private ImageView connectivity_icon;
 	private int panSens = 49, pitchSens = 49, rollSens = 49, zoomSpeed = 49, orientDisable = 0, invertX = 0, invertY = 0, invertPitch = 0, invertRoll = 0;
+	private Thread connector;
 	
 	//For touch control
 	private long previousTime = 0, currentTime, diffTime;
@@ -195,28 +196,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		//Attempts to connect if the user pressed "connect" in the configure screen
 		if(shouldBeConnected && !connected)
 		{	
-			if(wifi.isWifiEnabled())
-			{
-		        try {
-		        	clientSocket = new Socket(IP, Integer.parseInt(port));
-		        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
-		        	inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-		        	connected = true;
-		        	this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		        	Toast.makeText(this, "Connected successfully", Toast.LENGTH_SHORT).show();
-		        	connectivity_icon.setImageResource(R.drawable.green_icon);
-		        } catch (Exception e){ 
-		        	e.printStackTrace();
-		        	Toast.makeText(this, "Failed to connect to server", Toast.LENGTH_LONG).show();
-		        	connected = false;
-		        	shouldBeConnected = false;
-		        }
-			}
-			else
-			{
-				connected = false;
-				Toast.makeText(this, "Please enable Wi-Fi to connect", Toast.LENGTH_LONG).show();
-			}
+			connect();
 		}
 		
 		if(!shouldBeConnected && !connected)
@@ -224,6 +204,16 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			Intent i = new Intent(AccelTest.this, Configure.class);
 			startActivityForResult(i, SUB_ACTIVITY_REQUEST_CODE);
 		}
+		
+		if(connected)
+		{
+			if(frozen)
+				freezeButton.setText("Unfreeze Output");
+			else
+				freezeButton.setText("Freeze Output");
+		}
+		else
+			freezeButton.setText("Reconnect");
 	}
 	
 	/** Called when the application ends */
@@ -449,20 +439,29 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	{
 		if(v == freezeButton)
 		{
-			if(frozen)
+			if(connected)
 			{
-				frozen = false;
-				
-				if(connected)
-					connectivity_icon.setImageResource(R.drawable.green_icon);
+				if(frozen)
+				{
+					frozen = false;
+					freezeButton.setText("Freeze Output");
+					
+					if(connected)
+						connectivity_icon.setImageResource(R.drawable.green_icon);
+				}
+				else
+				{
+					frozen = true;
+					firstTimeFrozen = true;
+					freezeButton.setText("Unfreeze Output");
+					
+					if(connected)
+						connectivity_icon.setImageResource(R.drawable.yellow_icon);
+				}
 			}
 			else
 			{
-				frozen = true;
-				firstTimeFrozen = true;
-				
-				if(connected)
-					connectivity_icon.setImageResource(R.drawable.yellow_icon);
+				connect();
 			}
 		}
 		
@@ -508,6 +507,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			connected = false;
 			connectivity_icon.setImageResource(R.drawable.red_icon);
 			this.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+			freezeButton.setText("Reconnect");
 		} 
 	}
 	
@@ -543,6 +543,34 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 				Toast.makeText(this, "Wrong passcode entered", Toast.LENGTH_SHORT).show();
 				disconnect(false);
 			}
+		}
+	}
+	
+	/** Attempts to connect to the server */
+	private void connect()
+	{
+		if(wifi.isWifiEnabled())
+		{
+	        try {
+	        	clientSocket = new Socket(IP, Integer.parseInt(port));
+	        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
+	        	inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+	        	connected = true;
+	        	this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+	        	Toast.makeText(this, "Connected successfully", Toast.LENGTH_SHORT).show();
+	        	connectivity_icon.setImageResource(R.drawable.green_icon);
+	        	freezeButton.setText("Freeze Output");
+	        } catch (Exception e){ 
+	        	e.printStackTrace();
+	        	Toast.makeText(this, "Failed to connect to server", Toast.LENGTH_LONG).show();
+	        	connected = false;
+	        	shouldBeConnected = false;
+	        }
+		}
+		else
+		{
+			connected = false;
+			Toast.makeText(this, "Please enable Wi-Fi to connect", Toast.LENGTH_LONG).show();
 		}
 	}
 }

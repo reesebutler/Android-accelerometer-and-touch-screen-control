@@ -69,7 +69,6 @@
 		android:layout_weight="1"
 		android:gravity="center">
 		<Button
-			android:text="@string/freeze"
 			android:id="@+id/freeze"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
