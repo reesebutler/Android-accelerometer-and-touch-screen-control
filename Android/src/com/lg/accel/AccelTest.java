@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -24,6 +25,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -62,7 +64,9 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	private ImageButton upButton, downButton;
 	private ImageView connectivity_icon;
 	private int panSens = 49, pitchSens = 49, rollSens = 49, zoomSpeed = 49, orientDisable = 0, invertX = 0, invertY = 0, invertPitch = 0, invertRoll = 0;
-	private Thread connector;
+	private Handler handler;
+	private AccelTest mainThread;
+	private ProgressDialog progress;
 	
 	//For touch control
 	private long previousTime = 0, currentTime, diffTime;
@@ -91,6 +95,9 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
         calibrateButton.setOnClickListener(this);
         upButton.setOnTouchListener(this);
         downButton.setOnTouchListener(this);
+        
+        handler = new Handler();
+        mainThread = this;
     }
 
     /** Called when the application is paused (essentially any time that the user navigates away from the main activity) */
@@ -549,28 +556,61 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	/** Attempts to connect to the server */
 	private void connect()
 	{
-		if(wifi.isWifiEnabled())
-		{
-	        try {
-	        	clientSocket = new Socket(IP, Integer.parseInt(port));
-	        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
-	        	inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-	        	connected = true;
-	        	this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-	        	Toast.makeText(this, "Connected successfully", Toast.LENGTH_SHORT).show();
-	        	connectivity_icon.setImageResource(R.drawable.green_icon);
-	        	freezeButton.setText("Freeze Output");
-	        } catch (Exception e){ 
-	        	e.printStackTrace();
-	        	Toast.makeText(this, "Failed to connect to server", Toast.LENGTH_LONG).show();
-	        	connected = false;
-	        	shouldBeConnected = false;
-	        }
-		}
-		else
-		{
-			connected = false;
-			Toast.makeText(this, "Please enable Wi-Fi to connect", Toast.LENGTH_LONG).show();
-		}
+		new Thread(new Runnable(){
+			public void run()
+			{
+				if(wifi.isWifiEnabled())
+				{
+					handler.post(new Runnable() {
+						public void run()
+						{
+							progress = ProgressDialog.show(mainThread, "", "Connecting...");
+						}
+					});
+					
+			        try {
+			        	clientSocket = new Socket(IP, Integer.parseInt(port));
+			        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
+			        	inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			        	connected = true;
+			        	
+			        	handler.post(new Runnable() {
+			        		public void run()
+			        		{
+			        			progress.dismiss();
+			        			mainThread.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+			    	        	Toast.makeText(mainThread, "Connected successfully", Toast.LENGTH_SHORT).show();
+			    	        	connectivity_icon.setImageResource(R.drawable.green_icon);
+			    	        	freezeButton.setText("Freeze Output");
+			        		}
+			        	});
+			        } catch (Exception e){ 
+			        	e.printStackTrace();
+			        	
+			        	handler.post(new Runnable() {
+			        		public void run()
+			        		{
+			        			progress.dismiss();
+			        			Toast.makeText(mainThread, "Failed to connect to server", Toast.LENGTH_LONG).show();
+			        		}
+			        	});
+			        	
+			        	connected = false;
+			        	shouldBeConnected = false;
+			        }
+				}
+				else
+				{
+					connected = false;
+					
+					handler.post(new Runnable() {
+						public void run()
+						{
+							Toast.makeText(mainThread, "Please enable Wi-Fi to connect", Toast.LENGTH_LONG).show();
+						}
+					});
+				}
+			}
+		}).start();
 	}
 }

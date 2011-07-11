@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Android Controller</string>
+    <string name="app_name">Google Earth Remote</string>
     <string name="cal">Calibrate</string>
     <string name="help">Help</string>
     <string name="configure">Connect</string>
