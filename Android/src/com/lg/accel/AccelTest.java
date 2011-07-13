@@ -1,5 +1,5 @@
 /** Reese Butler
- *  7/8/2011
+ *  7/13/2011
  */
 
 package com.lg.accel;
@@ -59,7 +59,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	private FileInputStream in = null;
 	private InputStreamReader inReader = null;
 	char[] inputBuffer;
-	private boolean connected = false, frozen = false, shouldBeConnected = false, firstTimeFrozen = false;
+	private boolean connected = false, frozen = false, shouldBeConnected = false, firstTimeFrozen = false, autoFrozen = false;
 	private Button freezeButton, calibrateButton;
 	private ImageButton upButton, downButton;
 	private ImageView connectivity_icon;
@@ -70,8 +70,8 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	
 	//For touch control
 	private long previousTime = 0, currentTime, diffTime;
-	private float previousX = 0, previousY = 0, currentX, currentY, diffX, diffY;
-	private boolean scrolling = false;
+	private float previousX = 0, previousY = 0, currentX, currentY, diffX, diffY, prevDistanceX = 0, prevDistanceY = 0, tmpX, tmpY;
+	private boolean scrolling = false, firstValue = true;
 	
     /** Called when the activity is first created. */
     @Override
@@ -109,12 +109,19 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		director.unregisterListener(this, director.getDefaultSensor(TYPE_ACCELEROMETER));
 		director.unregisterListener(this, director.getDefaultSensor(TYPE_ORIENTATION));
 		director = null;
+		freeze();
 	}
 	
 	/** Called after the application is started or resumed */
 	protected void onResume()
 	{
 		super.onResume();
+		
+		if(autoFrozen)
+		{
+			frozen = false;
+		}
+		
 		director = (SensorManager) getSystemService(SENSOR_SERVICE);
 		wifi = (WifiManager) getSystemService(WIFI_SERVICE);
 		boolean accelExists = director.registerListener(this, director.getDefaultSensor(TYPE_ACCELEROMETER), SENSOR_DELAY_UI);
@@ -261,6 +268,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		}
 		case R.id.quit:
 		{
+			freeze();
 			quit();
 			return true;
 		}
@@ -396,6 +404,14 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			previousTime = currentTime;
 			previousX = currentX;
 			previousY = currentY;
+			tmpX = distanceX;
+			tmpY = distanceY;
+			
+			distanceX = (distanceX + prevDistanceX) / 2;
+			distanceY = (distanceY + prevDistanceY) / 2;
+			
+			prevDistanceX = tmpX;
+			prevDistanceY = tmpY;
 		}
 	
 		if(connected)
@@ -551,6 +567,24 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 				disconnect(false);
 			}
 		}
+	}
+	
+	private void freeze()
+	{
+		if(!frozen)
+		{
+			frozen = true;
+			firstTimeFrozen = true;
+			autoFrozen = true;
+		
+			if(connected)
+			{
+				sendValues();
+				checkConnection();
+			}
+		}
+		else
+			autoFrozen = false;
 	}
 	
 	/** Attempts to connect to the server */

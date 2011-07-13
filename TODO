@@ -15,6 +15,8 @@ make sure components scale well in different resolutions
 (DONE) make the text on the freeze button change from "freeze output" to "unfreeze output"
 (DONE) make it easier to reconnect to the server
 (DONE) stop the app from hanging when it fails in attempting to connect to the server
+(DONE) further smooth touch-screen input
+(DONE) make output stop immediately when switching to a different screen
 
 
 
