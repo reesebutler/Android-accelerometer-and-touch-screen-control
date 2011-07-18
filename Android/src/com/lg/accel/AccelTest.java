@@ -40,12 +40,11 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 /** Implements SensorEventListener for the accelerometer/orientation values
-* Implements OnGestureListener for the scrolling (touch-screen) values */
+* Implements OnClickListener for the buttons
+* Implements onTouchListener for the touch-screen output */
 public class AccelTest extends Activity implements SensorEventListener, OnClickListener, OnTouchListener
 {
 	private SensorManager director;
-	//private GestureDetector detector;
-	
 	@SuppressWarnings("unused")
 	private float x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0, xFinal, yFinal, zFinal, distanceX, distanceY, panZ = 0, roll = 0;
 	private float dx = 0, dy = 0, dz = 0;
@@ -71,7 +70,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	//For touch control
 	private long previousTime = 0, currentTime, diffTime;
 	private float previousX = 0, previousY = 0, currentX, currentY, diffX, diffY, prevDistanceX = 0, prevDistanceY = 0, tmpX, tmpY;
-	private boolean scrolling = false, firstValue = true;
+	private boolean scrolling = false;
 	
     /** Called when the activity is first created. */
     @Override
@@ -96,11 +95,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
         upButton.setOnTouchListener(this);
         downButton.setOnTouchListener(this);
         
-        handler = new Handler();
-        mainThread = this;
+        handler = new Handler(); //used to help make the app multi-threaded
+        mainThread = this; //Gives access to the UI (main) thread
     }
 
-    /** Called when the application is paused (essentially any time that the user navigates away from the main activity) */
+    /** Called when the activity is paused (which happens any time that the user navigates away from the main activity) */
 	protected void onPause()
 	{
 		super.onPause();
@@ -112,7 +111,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		freeze();
 	}
 	
-	/** Called after the application is started or resumed */
+	/** Called when the activity is started or resumed */
 	protected void onResume()
 	{
 		super.onResume();
@@ -153,12 +152,14 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			IP = dataString.substring(0, dataString.indexOf(","));
 			port = dataString.substring(dataString.indexOf(",") + 1, dataString.lastIndexOf(","));
 			
+			//Set key equal to the passcode. If none exists, then key is set to 0.
 			try {
 				key = Integer.parseInt(dataString.substring(dataString.lastIndexOf(",") + 1));
 			} catch (NumberFormatException e) {
 				key = 0;
 			}
-		} catch (Exception e) {
+		} //If no connection data exists, send the user to the connection screen
+		catch (Exception e) {
 			e.printStackTrace();
 			Intent i = new Intent(AccelTest.this, Configure.class);
 			startActivityForResult(i, SUB_ACTIVITY_REQUEST_CODE);
@@ -194,7 +195,6 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			invertRoll = Integer.parseInt(dataString.substring(12, 13));
 		} catch (Exception e) {
 			e.printStackTrace();
-			
 		} finally {
 			try {
 				if(inReader != null && in != null)
@@ -261,7 +261,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			startActivityForResult(i, SUB_ACTIVITY_REQUEST_CODE);
 			return true;
 		}
-		case R.id.connect: //Disconnects from the server 
+		case R.id.connect: //Disconnects from the server
 		{
 			disconnect(true);
 			return true;
@@ -307,7 +307,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	
 	public void onAccuracyChanged(Sensor sensor, int accuracy)
 	{
-		//This method really doesn't need to do anything
+		//This method really doesn't need to do anything, but it does need to be implemented for sensorEventListener
 	}
 	
 	/** Called whenever any values from the sensors change */
@@ -496,12 +496,14 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		}
 	}
 	
+	//Exits the application
 	private void quit()
 	{
 		onDestroy();
 		finish();
 	}
 	
+	//Disconnects from the server
 	private void disconnect(boolean intended)
 	{
 		shouldBeConnected = false;
@@ -569,6 +571,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 		}
 	}
 	
+	//Freezes output to the server. First sends 0's for all values to prevent Google Earth from continuing to move.
 	private void freeze()
 	{
 		if(!frozen)
