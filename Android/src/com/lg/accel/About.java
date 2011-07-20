@@ -14,8 +14,8 @@ public class About extends Activity
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.about); //The sole purpose of this class is to display the contents of help.xml
-		Linkify.addLinks((TextView) findViewById(R.id.about), Linkify.ALL);
+		setContentView(R.layout.about); //The sole purpose of this class is to display the contents of about.xml
+		Linkify.addLinks((TextView) findViewById(R.id.about), Linkify.ALL); //Makes the link clickable
 	}
 	
 	protected void onPause()

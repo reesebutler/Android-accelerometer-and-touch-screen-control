@@ -590,14 +590,17 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			autoFrozen = false;
 	}
 	
-	/** Attempts to connect to the server */
+	/** Attempts to connect to the server
+	 * 
+	 * Only the main (UI) thread is allowed to make changes to the UI, so
+	 * each hanler.post(new Runnable()  is used to manipulate the UI. */
 	private void connect()
-	{
+	{	//Starts a new thread to connect
 		new Thread(new Runnable(){
 			public void run()
 			{
-				if(wifi.isWifiEnabled())
-				{
+				if(wifi.isWifiEnabled()) //if wifi is enabled
+				{	//Uses the handler to update the UI
 					handler.post(new Runnable() {
 						public void run()
 						{
@@ -605,7 +608,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 						}
 					});
 					
-			        try {
+			        try { //Attempts to connect to the server
 			        	clientSocket = new Socket(IP, Integer.parseInt(port));
 			        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
 			        	inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -621,7 +624,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			    	        	freezeButton.setText("Freeze Output");
 			        		}
 			        	});
-			        } catch (Exception e){ 
+			        } catch (Exception e){ //if it failed to connect
 			        	e.printStackTrace();
 			        	
 			        	handler.post(new Runnable() {
@@ -636,7 +639,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			        	shouldBeConnected = false;
 			        }
 				}
-				else
+				else //if wifi is not enabled
 				{
 					connected = false;
 					

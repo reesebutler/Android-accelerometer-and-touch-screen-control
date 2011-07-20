@@ -53,7 +53,7 @@ public class Configure extends Activity implements OnClickListener
 			inReader.read(inputBuffer);
 			s = new String(inputBuffer);
 			s = s.trim();
-			s3 = s.substring(s.lastIndexOf(",") + 1);
+			s3 = s.substring(s.lastIndexOf(",") + 1); //Sets the passcode
 			s2 = s.substring(s.indexOf(",") + 1, s.lastIndexOf(",")); //Sets the port string
 			s = s.substring(0, s.indexOf(",")); //Sets the IP string
 		} catch (Exception e) {
@@ -73,6 +73,7 @@ public class Configure extends Activity implements OnClickListener
 			}
 		}
 		
+		//Pre-fills the fields with any existing values
 		ip = (EditText) findViewById(R.id.IPtext);
 		ip.setText(s);
 		port = (EditText) findViewById(R.id.porttext);
@@ -82,7 +83,7 @@ public class Configure extends Activity implements OnClickListener
 		save = (Button) findViewById(R.id.button2);
 		save.setOnClickListener(this);
 		
-		//Strange method that has to be implemented
+		//Only does something if the enter key is pressed
 		ip.setOnKeyListener(new OnKeyListener()
 		{
 		    public boolean onKey(View v, int keyCode, KeyEvent event) 
@@ -95,6 +96,7 @@ public class Configure extends Activity implements OnClickListener
 		    }
 		});
 		
+		//Only does something if the enter key is pressed
 		port.setOnKeyListener(new OnKeyListener()
 		{
 		    public boolean onKey(View v, int keyCode, KeyEvent event) 
@@ -107,6 +109,7 @@ public class Configure extends Activity implements OnClickListener
 		    }
 		});
 		
+		//Only does something if the enter key is pressed
 		enterKey.setOnKeyListener(new OnKeyListener()
 		{
 		    public boolean onKey(View v, int keyCode, KeyEvent event) 
@@ -168,7 +171,7 @@ public class Configure extends Activity implements OnClickListener
 		}
 	}
 	
-	//Decides whether or not to save the entered IP address (based on whether or not it is valid)
+	//Decides whether or not to save the entered values (based on whether or not they are valid)
 	public void onClick(View v)
 	{
 		boolean ipCorrect = false;
@@ -177,7 +180,7 @@ public class Configure extends Activity implements OnClickListener
 		int tmpInt = 0;
 		
 		if(v == save)
-		{
+		{	//checks the IP address
 			try {
 				InetAddress inet = InetAddress.getByName(ip.getText().toString());
 				s = inet.toString().substring(1);
@@ -188,7 +191,7 @@ public class Configure extends Activity implements OnClickListener
 			}
 			
 			if(ipCorrect)
-			{
+			{	//checks the port
 				try {
 					tmpInt = Integer.parseInt(port.getText().toString());
 					s2 = Integer.toString(tmpInt);
@@ -203,6 +206,7 @@ public class Configure extends Activity implements OnClickListener
 				}
 			}
 			
+			//checks the key
 			try {
 				if(!(enterKey.getText().toString().equals("")))
 				{
@@ -220,6 +224,7 @@ public class Configure extends Activity implements OnClickListener
 				Toast.makeText(this, "Not a valid passcode", Toast.LENGTH_SHORT).show();
 			}
 			
+			//If all 3 are correct, stores the values and returns to the main screen
 			if(ipCorrect && portCorrect && keyCorrect)
 			{
 				try {

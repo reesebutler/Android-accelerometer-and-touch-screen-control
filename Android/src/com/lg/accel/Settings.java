@@ -124,7 +124,7 @@ public class Settings extends Activity implements OnClickListener, OnSeekBarChan
 		seek3.setProgress(Integer.parseInt(rollSens));
 		seek4.setProgress(Integer.parseInt(zoomSpeed));
 
-		/** Checks the checkboxes if necessary */
+		/** Puts checks in the checkboxes if necessary */
 		if(orientDisable.equals("1"))
 			box1.setChecked(true);
 		if(invertX.equals("1"))
@@ -154,7 +154,7 @@ public class Settings extends Activity implements OnClickListener, OnSeekBarChan
 		super.onPause();
 	}
 
-	//Decides whether or not to save the entered IP address (based on whether or not it is valid)
+	//Saves the entered settings
 	public void onClick(View v)
 	{
 		if(v == save)
@@ -244,6 +244,7 @@ public class Settings extends Activity implements OnClickListener, OnSeekBarChan
 		}
 	}
 	
+	//handles the seekbar's and their associated text
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromTouch)
 	{
 		if(seekBar == seek1)
