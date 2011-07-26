@@ -1,5 +1,5 @@
 /** Reese Butler
- *  7/13/2011
+ *  7/26/2011
  */
 
 package com.lg.accel;
@@ -19,6 +19,7 @@ import java.net.Socket;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -62,7 +63,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	private Button freezeButton, calibrateButton;
 	private ImageButton upButton, downButton;
 	private ImageView connectivity_icon;
-	private int panSens = 49, pitchSens = 49, rollSens = 49, zoomSpeed = 49, orientDisable = 0, invertX = 0, invertY = 0, invertPitch = 0, invertRoll = 0;
+	private int panSens = 49, pitchSens = 49, rollSens = 49, zoomSpeed = 49, orientDisable = 0, invertX = 0, invertY = 0, invertPitch = 0, invertRoll = 0, orientation = 0;
 	private Handler handler;
 	private AccelTest mainThread;
 	private ProgressDialog progress;
@@ -193,6 +194,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			invertY = Integer.parseInt(dataString.substring(10, 11));
 			invertPitch = Integer.parseInt(dataString.substring(11, 12));
 			invertRoll = Integer.parseInt(dataString.substring(12, 13));
+			orientation = Integer.parseInt(dataString.substring(13, 14));
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -206,6 +208,11 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 				e.printStackTrace();
 			}
 		}
+		
+		if(orientation == 1)
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		else
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		
 		//Attempts to connect if the user pressed "connect" in the configure screen
 		if(shouldBeConnected && !connected)

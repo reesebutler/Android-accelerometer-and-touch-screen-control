@@ -1,5 +1,5 @@
 /** Reese Butler
- *  6/28/2011
+ *  7/26/2011
  */
 
 package com.lg.accel;
@@ -30,12 +30,12 @@ public class Settings extends Activity implements OnClickListener, OnSeekBarChan
 	InputStreamReader inReader = null;
 	char[] inputBuffer = new char[255];
 	String s = "";
-	String panSens = "", pitchSens = "", rollSens = "", zoomSpeed = "", orientDisable = "", invertX = "", invertY = "", invertPitch = "", invertRoll = "";
-	String panSens1 = "", pitchSens1 = "", rollSens1 = "", zoomSpeed1 = "", orientDisable1 = "", invertX1 = "", invertY1 = "", invertPitch1 = "", invertRoll1 = "";
+	String panSens = "", pitchSens = "", rollSens = "", zoomSpeed = "", orientDisable = "", invertX = "", invertY = "", invertPitch = "", invertRoll = "", orientation = "";
+	String panSens1 = "", pitchSens1 = "", rollSens1 = "", zoomSpeed1 = "", orientDisable1 = "", invertX1 = "", invertY1 = "", invertPitch1 = "", invertRoll1 = "", orientation1 = "";
 	boolean finished = false;
 	TextView text1, text2, text3, text4;
 	SeekBar seek1, seek2, seek3, seek4;
-	CheckBox box1, box2, box3, box4, box5;
+	CheckBox box1, box2, box3, box4, box5, box6;
 	
 	protected void onCreate(Bundle savedInstanceState) 
 	{
@@ -59,6 +59,7 @@ public class Settings extends Activity implements OnClickListener, OnSeekBarChan
 			invertY = s.substring(10, 11); //value either 0 or 1
 			invertPitch = s.substring(11, 12); //value either 0 or 1
 			invertRoll = s.substring(12, 13); //value either 0 or 1
+			orientation = s.substring(13, 14); //value either 0 or 1
 		} catch (Exception e) {
 			panSens = "49";
 			pitchSens = "49";
@@ -69,6 +70,7 @@ public class Settings extends Activity implements OnClickListener, OnSeekBarChan
 			invertY = "0";
 			invertPitch = "0";
 			invertRoll = "0";
+			orientation = "0";
 			Toast.makeText(this, "Unable to read previous settings", Toast.LENGTH_SHORT).show();
 		} finally {
 			try {
@@ -91,6 +93,7 @@ public class Settings extends Activity implements OnClickListener, OnSeekBarChan
 		invertY1 = invertY;
 		invertPitch1 = invertPitch;
 		invertRoll1 = invertRoll;
+		orientation1 = orientation;
 		
 		text1 = (TextView) findViewById(R.id.text1);
 		text2 = (TextView) findViewById(R.id.text2);
@@ -105,12 +108,14 @@ public class Settings extends Activity implements OnClickListener, OnSeekBarChan
 		box3 = (CheckBox) findViewById(R.id.box3);
 		box4 = (CheckBox) findViewById(R.id.box4);
 		box5 = (CheckBox) findViewById(R.id.box5);
+		box6 = (CheckBox) findViewById(R.id.box6);
 		
 		box1.setOnClickListener(this);
 		box2.setOnClickListener(this);
 		box3.setOnClickListener(this);
 		box4.setOnClickListener(this);
 		box5.setOnClickListener(this);
+		box6.setOnClickListener(this);
 		
 		/** Initializes the text to the values of the seek bars */
 		text1.setText("Set panning sensitivity: " + (Integer.parseInt(panSens) + 1) + "%");
@@ -135,6 +140,8 @@ public class Settings extends Activity implements OnClickListener, OnSeekBarChan
 			box4.setChecked(true);
 		if(invertRoll.equals("1"))
 			box5.setChecked(true);
+		if(orientation.equals("1"))
+			box6.setChecked(true);
 		
 		seek1.setOnSeekBarChangeListener(this);
 		seek2.setOnSeekBarChangeListener(this);
@@ -162,7 +169,7 @@ public class Settings extends Activity implements OnClickListener, OnSeekBarChan
 			try {
 				out = openFileOutput("settings.dat", MODE_PRIVATE);
 				outWriter = new OutputStreamWriter(out);
-				outWriter.write(panSens1 + pitchSens1 + rollSens1 + zoomSpeed1 + orientDisable1 + invertX1 + invertY1 + invertPitch1 + invertRoll1);
+				outWriter.write(panSens1 + pitchSens1 + rollSens1 + zoomSpeed1 + orientDisable1 + invertX1 + invertY1 + invertPitch1 + invertRoll1 + orientation1);
 				outWriter.flush();
 				Toast.makeText(this, "Settings successfully saved", Toast.LENGTH_SHORT).show();
 				finish();
@@ -193,12 +200,14 @@ public class Settings extends Activity implements OnClickListener, OnSeekBarChan
 			invertY1 = "0";
 			invertPitch1 = "0";
 			invertRoll1 = "0";
+			orientation1 = "0";
 			
 			box1.setChecked(false);
 			box2.setChecked(false);
 			box3.setChecked(false);
 			box4.setChecked(false);
 			box5.setChecked(false);
+			box6.setChecked(false);
 			
 			seek1.setProgress(49);
 			seek2.setProgress(49);
@@ -241,6 +250,13 @@ public class Settings extends Activity implements OnClickListener, OnSeekBarChan
 				invertRoll1 = "1";
 			else
 				invertRoll1 = "0";
+		}
+		else if(v == box6)
+		{
+			if(((CheckBox)v).isChecked())
+				orientation1 = "1";
+			else
+				orientation1 = "0";
 		}
 	}
 	

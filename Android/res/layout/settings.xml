@@ -96,6 +96,12 @@
 				android:layout_height="wrap_content"
 				android:text="Invert roll"
 				android:textSize="20sp" />
+			<CheckBox
+				android:id="@+id/box6"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="View in landscape mode"
+				android:textSize="20sp" />
 
 			<TextView
 				android:text=""

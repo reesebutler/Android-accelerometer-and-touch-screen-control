@@ -25,41 +25,22 @@
 
 	</TableRow>
 
-	<TableRow>
-		<TextView
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:id="@+id/placdeholder2"
-			android:textSize="140sp" />
-
-	</TableRow>
-
 	<TableRow
 		android:layout_height="wrap_content"
 		android:layout_width="wrap_content"
 		android:id="@+id/tableRow1"
-		android:layout_gravity="bottom">
+		android:layout_gravity="center_vertical"
+		android:layout_weight="1">
 		<ImageButton
 			android:id="@+id/downz"
-			android:layout_gravity="left"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:src="@drawable/downz"></ImageButton>
+			android:src="@drawable/downz" android:layout_gravity="bottom|left"></ImageButton>
 		<ImageButton
 			android:id="@+id/upz"
-			android:layout_gravity="right"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:src="@drawable/upz"></ImageButton>
-	</TableRow>
-
-	<TableRow>
-		<TextView
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:id="@+id/placeholder3"
-			android:textSize="30sp" />
-
+			android:src="@drawable/upz" android:layout_gravity="bottom"></ImageButton>
 	</TableRow>
 
 	<TableRow
