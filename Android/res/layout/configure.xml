@@ -54,6 +54,20 @@
 				android:layout_height="wrap_content"
 				android:numeric="integer"
 				android:password="true" />
+				
+			<TextView
+				android:text="\nEnter connection timeout (in milliseconds):"
+				android:textSize="20sp"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/textView3" />
+
+			<EditText
+				android:id="@+id/timetext"
+				android:singleLine="true"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:numeric="integer" />
 
 			<TextView
 				android:text=""

@@ -1,5 +1,5 @@
 /** Reese Butler
- *  7/26/2011
+ *  8/2/2011
  */
 
 package com.lg.accel;
@@ -14,6 +14,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import android.app.Activity;
@@ -63,7 +65,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	private Button freezeButton, calibrateButton;
 	private ImageButton upButton, downButton;
 	private ImageView connectivity_icon;
-	private int panSens = 49, pitchSens = 49, rollSens = 49, zoomSpeed = 49, orientDisable = 0, invertX = 0, invertY = 0, invertPitch = 0, invertRoll = 0, orientation = 0;
+	private int panSens = 49, pitchSens = 49, rollSens = 49, zoomSpeed = 49, orientDisable = 0, invertX = 0, invertY = 0, invertPitch = 0, invertRoll = 0, orientation = 0, timeout = 7000;
 	private Handler handler;
 	private AccelTest mainThread;
 	private ProgressDialog progress;
@@ -155,9 +157,16 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			
 			//Set key equal to the passcode. If none exists, then key is set to 0.
 			try {
-				key = Integer.parseInt(dataString.substring(dataString.lastIndexOf(",") + 1));
+				key = Integer.parseInt(dataString.substring(dataString.lastIndexOf(",") + 1), dataString.indexOf("a"));
 			} catch (NumberFormatException e) {
 				key = 0;
+			}
+			
+			//Set the timeout
+			try {
+				timeout = Integer.parseInt(dataString.substring(dataString.indexOf("a")));
+			} catch (NumberFormatException e) {
+				key = 7000;
 			}
 		} //If no connection data exists, send the user to the connection screen
 		catch (Exception e) {
@@ -195,6 +204,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 			invertPitch = Integer.parseInt(dataString.substring(11, 12));
 			invertRoll = Integer.parseInt(dataString.substring(12, 13));
 			orientation = Integer.parseInt(dataString.substring(13, 14));
+			timeout = Integer.parseInt(dataString.substring(14));
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -605,7 +615,7 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 	{	//Starts a new thread to connect
 		new Thread(new Runnable(){
 			public void run()
-			{
+			{	
 				if(wifi.isWifiEnabled()) //if wifi is enabled
 				{	//Uses the handler to update the UI
 					handler.post(new Runnable() {
@@ -616,7 +626,9 @@ public class AccelTest extends Activity implements SensorEventListener, OnClickL
 					});
 					
 			        try { //Attempts to connect to the server
-			        	clientSocket = new Socket(IP, Integer.parseInt(port));
+			        	clientSocket = new Socket();
+			        	InetSocketAddress tmpAddress = new InetSocketAddress(InetAddress.getByName(IP), Integer.parseInt(port));
+			        	clientSocket.connect(tmpAddress, timeout);
 			        	outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
 			        	inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			        	connected = true;

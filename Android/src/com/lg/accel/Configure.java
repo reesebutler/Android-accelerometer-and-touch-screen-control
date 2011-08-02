@@ -1,5 +1,5 @@
 /** Reese Butler
- *  7/5/2011
+ *  8/2/2011
  */
 
 package com.lg.accel;
@@ -15,6 +15,7 @@ import java.net.UnknownHostException;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,19 +26,21 @@ import android.view.View.OnKeyListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.util.Log;
 
 public class Configure extends Activity implements OnClickListener
 {
 	EditText ip = null;
 	EditText port = null;
 	EditText enterKey = null;
+	EditText timeout = null;
 	Button save = null;
 	FileOutputStream out = null;
 	OutputStreamWriter outWriter = null;
 	FileInputStream in = null;
 	InputStreamReader inReader = null;
 	char[] inputBuffer;
-	String s = "", s2 = "", s3 = "";
+	String s = "", s2 = "", s3 = "", s4 = "";
 	boolean finished = false;
 	
 	protected void onCreate(Bundle savedInstanceState) 
@@ -53,13 +56,15 @@ public class Configure extends Activity implements OnClickListener
 			inReader.read(inputBuffer);
 			s = new String(inputBuffer);
 			s = s.trim();
-			s3 = s.substring(s.lastIndexOf(",") + 1); //Sets the passcode
+			s4 = s.substring(s.indexOf("a") + 1); //Sets the connection timeout
+			s3 = s.substring(s.lastIndexOf(",") + 1, s.indexOf("a")); //Sets the passcode
 			s2 = s.substring(s.indexOf(",") + 1, s.lastIndexOf(",")); //Sets the port string
 			s = s.substring(0, s.indexOf(",")); //Sets the IP string
 		} catch (Exception e) {
 			e.printStackTrace();
 			s = "192.168.1.100";
 			s2 = "4444";
+			s4 = "7000";
 			Toast.makeText(this, "Unable to read previous settings", Toast.LENGTH_SHORT).show();
 		} finally {
 			try {
@@ -80,6 +85,8 @@ public class Configure extends Activity implements OnClickListener
 		port.setText(s2);
 		enterKey = (EditText) findViewById(R.id.keytext);
 		enterKey.setText(s3);
+		timeout = (EditText) findViewById(R.id.timetext);
+		timeout.setText(s4);
 		save = (Button) findViewById(R.id.button2);
 		save.setOnClickListener(this);
 		
@@ -122,7 +129,18 @@ public class Configure extends Activity implements OnClickListener
 		    }
 		});
 
-
+		//Only does something if the enter key is pressed
+		timeout.setOnKeyListener(new OnKeyListener()
+		{
+		    public boolean onKey(View v, int keyCode, KeyEvent event) 
+		    {
+		    	if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER))
+		    	{
+		    		return true;
+		    	}
+		    	return false;
+		    }
+		});
 	}
 	
 	protected void onPause()
@@ -177,6 +195,7 @@ public class Configure extends Activity implements OnClickListener
 		boolean ipCorrect = false;
 		boolean portCorrect = false;
 		boolean keyCorrect = false;
+		boolean timeCorrect = false;
 		int tmpInt = 0;
 		
 		if(v == save)
@@ -224,13 +243,27 @@ public class Configure extends Activity implements OnClickListener
 				Toast.makeText(this, "Not a valid passcode", Toast.LENGTH_SHORT).show();
 			}
 			
-			//If all 3 are correct, stores the values and returns to the main screen
-			if(ipCorrect && portCorrect && keyCorrect)
+			//checks the port
+			try {
+				tmpInt = Integer.parseInt(timeout.getText().toString());
+				s4 = Integer.toString(tmpInt);
+				
+				if(tmpInt >= 0)
+					timeCorrect = true;
+				else
+					Toast.makeText(this, "Not a valid timeout, use a positive value", Toast.LENGTH_SHORT).show();
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+				Toast.makeText(this, "Not a valid timeout, use an integer", Toast.LENGTH_SHORT).show();
+			}
+			
+			//If all 4 are correct, stores the values and returns to the main screen
+			if(ipCorrect && portCorrect && keyCorrect && timeCorrect)
 			{
 				try {
 					out = openFileOutput("connection.dat", MODE_PRIVATE);
 					outWriter = new OutputStreamWriter(out);
-					outWriter.write(s + "," + s2 + "," + s3);
+					outWriter.write(s + "," + s2 + "," + s3 + "a" + s4);
 					outWriter.flush();
 					setResult(RESULT_OK);
 					finish();
