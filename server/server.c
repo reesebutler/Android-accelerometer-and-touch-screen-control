@@ -24,7 +24,7 @@ int newx, newy, newz, newpitch, newyaw, newroll = 0;
 int fifo, vflag = 0;
 char *pipe_name = "/dev/input/spacenavigator"; //The name of the pipe
 
-//Handles error messages
+//Simplifies the handling of error messages
 void error(char *msg)
 {
 	perror(msg);
