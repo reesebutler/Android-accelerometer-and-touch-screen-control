@@ -102,12 +102,6 @@
 				android:layout_height="wrap_content"
 				android:text="View in landscape mode"
 				android:textSize="20sp" />
-				
-			<EditText
-				android:id="@+id/timeout"
-				android:singleLine="true"
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content" />
 
 			<TextView
 				android:text=""
